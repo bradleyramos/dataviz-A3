@@ -8,9 +8,13 @@
 <body>
   <div class = "flex-container">
     <div class = "flex-item">
-      <p>Historical price chart of Vanguard Dividen Appreciation ETF, built with D3.js.</p>
+      <label for = "stock_input">Please provide stock symbol:</label>
+
+      <input type = "text" id = "stock_input" required minlength = '1' maxlength = '4' size = '4'>
+      <input type = "button" id = "enter_button" value = "Enter">
     </div>
   </div>
-  <div id = "chart"></div>
-  <script src = "bundle.js"></script>
+  <div class = "stock_graph">
+    <script src = "./bundle.js"></script>
+  </div>
 </body>

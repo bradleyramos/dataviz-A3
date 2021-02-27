@@ -1,11 +1,13 @@
 // Make our API Calls
-var unirest = require("unirest");
-async function fetchData() {
-    var req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
+let unirest = require("unirest");
+
+// Function to call API
+async function queryData() {
+    let req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
     req.query({
-        "interval": "5m",
-        "symbol": "AMRN",
-        "range": "1d",
+        "interval": "1d",
+        "symbol": document.getElementById("stock_input").value,
+        "range": "1y",
         "region": "US"
     });
     req.headers({
@@ -13,70 +15,64 @@ async function fetchData() {
         "x-rapidapi-host": "apidojo-yahoo-finance-v1.p.rapidapi.com",
         "useQueryString": true
     });
-    req.end(function (res) {
-        if (res.error) throw new Error(res.error);
-        // console.log(res.body);
-        return res.body;
+    req.end(function (response) {
+        if (response.error) {
+            throw new Error(response.error);
+        }
+        else {
+            data = loadData(response.body);
+            initialize_chart(data);
+        }
     });
-};
-console.log(fetchData());
+}
 
-// Start by loading data
-const loadData = () => {
-    let data = fetchData();
-    console.log('got data',data)
-    const chart_results_data = data["chart"]["result"][0];
-    const quote_data = chart_results_data["indicators"]["quote"][0];
+// Load data from API
+function loadData(data) {
+    let chart_results_data = data["chart"]["result"][0];
+    let quote_data = chart_results_data["indicators"]["quote"][0];
     return chart_results_data["timestamp"]
-        .map(function(time, index) {
-            return {
+        .map((time, index) => ({
                 date : new Date(time*1000),
                 high : quote_data["high"][index],
                 low : quote_data["low"][index],
                 open : quote_data["open"][index],
                 close : quote_data["close"][index],
                 volume : quote_data["volume"][index]
-            };
-        });
+        }));
 }
 
-const movingAverage = (data, numberOfPricePoints) => {
+// Compute moving average
+function movingAverage(data, numberOfPricePoints) {
     return data.map((row, index, total) => {
-      const start = Math.max(0, index - numberOfPricePoints);
-      const end = index;
-      const subset = total.slice(start, end + 1);
-      const sum = subset.reduce((a, b) => {
-        return a + b['close'];
-      }, 0);
-      return {
-        date: row['date'],
-        average: sum / subset.length
-      };
+      let start = Math.max(0, index - numberOfPricePoints);
+      let end = index;
+      let subset = total.slice(start, end + 1);
+      let sum = subset.reduce((a, b) => a + b['close'], 0);
+      return {date: row['date'], average: sum / subset.length};
     });
-  };
+}
 
 // Resonsivefy is function which allows SVG elements to have responsive 
 // capabilities by listening to window resize events.
 //
 // Credits: https://brendansudol.com/writing/responsive-d3
-const responsivefy = function(svg) {
+function responsivefy(svg) {
     // get container + svg aspect ratio
-    const container = d3.select(svg.node().parentNode),
+    let container = d3.select(svg.node().parentNode),
         width = parseInt(svg.style('width')),
         height = parseInt(svg.style('height')),
         aspect = width / height;
 
     // get width of container and resize svg to fit it
-    const resize = () => {
-        var targetWidth = parseInt(container.style('width'));
+    let resize = () => {
+        let targetWidth = parseInt(container.style('width'));
         svg.attr('width', targetWidth);
         svg.attr('height', Math.round(targetWidth / aspect));
     };
 
     // add viewBox and preserveAspectRatio properties,
     // and call resize so that svg resizes on inital page load
-    svg
-        .attr('viewBox', '0 0 ' + width + ' ' + height)
+    svg.attr('viewBox', '0 0 ' + width + ' ' + height)
         .attr('perserveAspectRatio', 'xMinYMid')
         .call(resize);
 
@@ -87,8 +83,8 @@ const responsivefy = function(svg) {
     d3.select(window).on('resize.' + container.attr('id'), resize);
 }
 
-// Definie function to initialize char
-const initialize_chart = function(data) {
+// Initialize chart
+function initialize_chart(data) {
     data = data.filter(
         row => row['high'] && row['low'] && row['close'] && row['open']
     );
@@ -103,27 +99,27 @@ const initialize_chart = function(data) {
     });
 
     const margin = {top: 50, right: 50, bottom: 50, left: 50};
-    const width = window.innerWidth - (margin.left + margin.right);
-    const height = window.innerHeight/2 - (margin.top + margin.bottom);
+    let width = window.innerWidth - (margin.left + margin.right);
+    let height = window.innerHeight/2 - (margin.top + margin.bottom);
 
     // Find data range
-    const xMin = d3.min(data, d => d["date"]);
-    const xMax = d3.max(data, d => d["date"]);
+    let xMin = d3.min(data, d => d["date"]);
+    let xMax = d3.max(data, d => d["date"]);
 
-    const yMin = d3.min(data, d => d["close"]);
-    const yMax = d3.max(data, d => d["close"]);
+    let yMin = d3.min(data, d => d["close"]);
+    let yMax = d3.max(data, d => d["close"]);
 
     // Scales for the charts
-    const xScale = d3.scaleTime()
+    let xScale = d3.scaleTime()
         .domain([xMin, xMax])
         .range([0, width]);
 
-    const yScale = d3.scaleLinear()
+    let yScale = d3.scaleLinear()
         .domain([yMin - 5, yMax])
         .range([height, 0]);
 
     // add chart SVG to the page
-    const svg = d3.select('#chart')
+    let svg = d3.select('#chart')
         .append('svg')
         .attr('width', width + margin['left'] + margin['right'])
         .attr('height', height + margin['top'] + margin['bottom'])
@@ -142,12 +138,12 @@ const initialize_chart = function(data) {
         .call(d3.axisRight(yScale));
 
     // generates close price line chart when called
-    const line = d3.line()
+    let line = d3.line()
         .x(d => {return xScale(d['date']);})
         .y(d => {return yScale(d['close']);});
 
     // generates moving average curve when called
-    const movingAverageLine = d3.line()
+    let movingAverageLine = d3.line()
         .x(d => {return xScale(d['date']);})
         .y(d => {return yScale(d['average']);})
         .curve(d3.curveBasis);
@@ -157,12 +153,12 @@ const initialize_chart = function(data) {
         .data([data])
         .style('fill', 'none')
         .attr('id', 'priceChart')
-        .attr('stroke', 'steelblue')
+        .attr('stroke', 'blue')
         .attr('stroke-width', '1.5')
         .attr('d', line);
 
     // calculates simple moving average over 50 days
-    const movingAverageData = movingAverage(data, 49);
+    let movingAverageData = movingAverage(data, 49);
     svg.append('path')
         .data([movingAverageData])
         .style('fill', 'none')
@@ -171,7 +167,7 @@ const initialize_chart = function(data) {
         .attr('d', movingAverageLine);
 
     // renders x and y crosshair
-    const focus = svg.append('g')
+    let focus = svg.append('g')
         .attr('class', 'focus')
         .style('display', 'none');
 
@@ -196,18 +192,18 @@ const initialize_chart = function(data) {
     d3.selectAll('.focus line').style('stroke-dasharray', '3 3');
 
     //returs insertion point
-    const bisectDate = d3.bisector(d => d.date).left;
+    let bisectDate = d3.bisector(d => d.date).left;
 
     /* mouseover function to generate crosshair */
     function generateCrosshair() {
         // returns corresponding value from the domain
-        const correspondingDate = xScale.invert(d3.pointer(event, this)[0]);
+        let correspondingDate = xScale.invert(d3.pointer(event, this)[0]);
 
         // gets insertion point
-        const i = bisectDate(data, correspondingDate, 1);
-        const d0 = data[i - 1];
-        const d1 = data[i];
-        const currentPoint =  correspondingDate - d0['date'] > d1['date'] - correspondingDate ? d1 : d0;
+        let i = bisectDate(data, correspondingDate, 1);
+        let d0 = data[i - 1];
+        let d1 = data[i];
+        let currentPoint =  correspondingDate - d0['date'] > d1['date'] - correspondingDate ? d1 : d0;
         focus.attr('transform', `translate(${xScale(currentPoint['date'])}, ${yScale(currentPoint['close'])})`);
 
         focus.select('line.x')
@@ -227,24 +223,27 @@ const initialize_chart = function(data) {
     }
 
     /* Legends */
-    const updateLegends = currentData => {d3.selectAll('.lineLegend').remove();
+    let updateLegends = currentData => {d3.selectAll('.lineLegend').remove();
 
-    const legendKeys = Object.keys(data[0]);
-    const lineLegend = svg.selectAll('.lineLegend')
+    let legendKeys = Object.keys(data[0]);
+    let lineLegend = svg.selectAll('.lineLegend')
         .data(legendKeys)
         .enter()
         .append('g')
         .attr('class', 'lineLegend')
         .attr('transform', (d, i) => {return `translate(0, ${i * 20})`;});
     lineLegend.append('text')
-        .text(d => {if (d === 'date') {
-                return `${d}: ${currentData[d].toLocaleDateString()}`;
+        .text(d => {
+            str_d = String(d)
+            str_d = str_d.charAt(0).toUpperCase() + str_d.slice(1);
+            if (d === 'date') {
+                return `${str_d}: ${currentData[d].toLocaleDateString()}`;
             } 
             else if (d === 'high' || d === 'low' || d === 'open' || d === 'close') {
-                return `${d}: ${currentData[d].toFixed(2)}`;
+                return `${str_d}: ${currentData[d].toFixed(2)}`;
             } 
             else {
-                return `${d}: ${currentData[d]}`;
+                return `${str_d}: ${currentData[d]}`;
             }
         })
         .style('fill', 'white')
@@ -252,13 +251,13 @@ const initialize_chart = function(data) {
     };
 
     /* Volume series bars */
-    const volData = data.filter(d => d['volume'] !== null && d['volume'] !== 0);
+    let volData = data.filter(d => d['volume'] !== null && d['volume'] !== 0);
 
-    const yMinVolume = d3.min(volData, d => {return Math.min(d['volume']);});
+    let yMinVolume = d3.min(volData, d => {return Math.min(d['volume']);});
 
-    const yMaxVolume = d3.max(volData, d => {return Math.max(d['volume']);});
+    let yMaxVolume = d3.max(volData, d => {return Math.max(d['volume']);});
 
-    const yVolumeScale = d3
+    let yVolumeScale = d3
         .scaleLinear()
         .domain([yMinVolume, yMaxVolume])
         .range([height, height * (3 / 4)]);
@@ -275,7 +274,7 @@ const initialize_chart = function(data) {
                 return '#03a678';
             } 
             else {
-                return volData[i - 1].close > d.close ? '#c0392b' : '#03a678'; // green bar if price is rising during that period, and red when price  is falling
+                return volData[i - 1].close > d.close ? 'green' : 'red'; // green bar if price is rising during that period, and red when price  is falling
             }
         })
         .attr('width', 1)
@@ -283,5 +282,4 @@ const initialize_chart = function(data) {
 }
 
 // Execute code
-data = loadData();
-initialize_chart(data);
+document.getElementById("enter_button").onclick = queryData;

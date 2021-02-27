@@ -1,10 +1,10 @@
 body {
-    background:#00151c;
+    background:white;
 }
 
 #chart {
-    background: #0e3040;
-    color: #67809f;
+    background: lightgrey;
+    color: black;
     width: 100%;
     height: 100%;
 }
@@ -26,7 +26,7 @@ body {
 }
 
 .flex-item {
-    color: white;
+    color: black;
     text-align: left;
     padding: 1em;
 }
