@@ -15,11 +15,11 @@ async function fetchData() {
     });
     req.end(function (res) {
         if (res.error) throw new Error(res.error);
-        console.log(res.body);
+        // console.log(res.body);
         return res.body;
     });
 };
-
+console.log(fetchData());
 
 // Start by loading data
 const loadData = () => {
