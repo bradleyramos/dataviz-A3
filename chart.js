@@ -21,7 +21,7 @@ async function queryData() {
         }
         else {
             data = loadData(response.body);
-            initialize_chart(data);
+            createChart(data);
         }
     });
 }
@@ -32,63 +32,33 @@ function loadData(data) {
     let quote_data = chart_results_data["indicators"]["quote"][0];
     return chart_results_data["timestamp"]
         .map((time, index) => ({
-                date : new Date(time*1000),
-                high : quote_data["high"][index],
-                low : quote_data["low"][index],
-                open : quote_data["open"][index],
-                close : quote_data["close"][index],
-                volume : quote_data["volume"][index]
+            date: new Date(time * 1000),
+            high: quote_data["high"][index],
+            low: quote_data["low"][index],
+            open: quote_data["open"][index],
+            close: quote_data["close"][index],
+            volume: quote_data["volume"][index]
         }));
 }
 
 // Compute moving average
 function movingAverage(data, numberOfPricePoints) {
     return data.map((row, index, total) => {
-      let start = Math.max(0, index - numberOfPricePoints);
-      let end = index;
-      let subset = total.slice(start, end + 1);
-      let sum = subset.reduce((a, b) => a + b['close'], 0);
-      return {date: row['date'], average: sum / subset.length};
+        let start = Math.max(0, index - numberOfPricePoints);
+        let end = index;
+        let subset = total.slice(start, end + 1);
+        let sum = subset.reduce((a, b) => a + b['close'], 0);
+        return { date: row['date'], average: sum / subset.length };
     });
 }
 
-// Resonsivefy is function which allows SVG elements to have responsive 
-// capabilities by listening to window resize events.
-//
-// Credits: https://brendansudol.com/writing/responsive-d3
-function responsivefy(svg) {
-    // get container + svg aspect ratio
-    let container = d3.select(svg.node().parentNode),
-        width = parseInt(svg.style('width')),
-        height = parseInt(svg.style('height')),
-        aspect = width / height;
-
-    // get width of container and resize svg to fit it
-    let resize = () => {
-        let targetWidth = parseInt(container.style('width'));
-        svg.attr('width', targetWidth);
-        svg.attr('height', Math.round(targetWidth / aspect));
-    };
-
-    // add viewBox and preserveAspectRatio properties,
-    // and call resize so that svg resizes on inital page load
-    svg.attr('viewBox', '0 0 ' + width + ' ' + height)
-        .attr('perserveAspectRatio', 'xMinYMid')
-        .call(resize);
-
-    // to register multiple listeners for same event type,
-    // you need to add namespace, i.e., 'click.foo'
-    // necessary if you call invoke this function for multiple svgs
-    // api docs: https://github.com/mbostock/d3/wiki/Selections#on
-    d3.select(window).on('resize.' + container.attr('id'), resize);
-}
-
 // Initialize chart
-function initialize_chart(data) {
+function createChart(data) {
     data = data.filter(
         row => row['high'] && row['low'] && row['close'] && row['open']
     );
 
+    // create this_year_start_data
     this_year_start_data = new Date(2018, 0, 1)
 
     // filter out data based on time period
@@ -98,9 +68,9 @@ function initialize_chart(data) {
         }
     });
 
-    const margin = {top: 50, right: 50, bottom: 50, left: 50};
+    const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     let width = window.innerWidth - (margin.left + margin.right);
-    let height = window.innerHeight/2 - (margin.top + margin.bottom);
+    let height = window.innerHeight / 2 - (margin.top + margin.bottom);
 
     // Find data range
     let xMin = d3.min(data, d => d["date"]);
@@ -118,12 +88,14 @@ function initialize_chart(data) {
         .domain([yMin - 5, yMax])
         .range([height, 0]);
 
+    // clear out old svg
+    d3.selectAll('#chart > *').remove();
+
     // add chart SVG to the page
     let svg = d3.select('#chart')
         .append('svg')
         .attr('width', width + margin['left'] + margin['right'])
         .attr('height', height + margin['top'] + margin['bottom'])
-        .call(responsivefy)
         .append('g')
         .attr('transform', `translate(${margin['left']}, ${margin['top']})`);
 
@@ -139,13 +111,13 @@ function initialize_chart(data) {
 
     // generates close price line chart when called
     let line = d3.line()
-        .x(d => {return xScale(d['date']);})
-        .y(d => {return yScale(d['close']);});
+        .x(d => xScale(d['date']))
+        .y(d => yScale(d['close']));
 
     // generates moving average curve when called
     let movingAverageLine = d3.line()
-        .x(d => {return xScale(d['date']);})
-        .y(d => {return yScale(d['average']);})
+        .x(d => xScale(d['date']))
+        .y(d => yScale(d['average']))
         .curve(d3.curveBasis);
 
     // Append the path and bind data
@@ -203,7 +175,7 @@ function initialize_chart(data) {
         let i = bisectDate(data, correspondingDate, 1);
         let d0 = data[i - 1];
         let d1 = data[i];
-        let currentPoint =  correspondingDate - d0['date'] > d1['date'] - correspondingDate ? d1 : d0;
+        let currentPoint = correspondingDate - d0['date'] > d1['date'] - correspondingDate ? d1 : d0;
         focus.attr('transform', `translate(${xScale(currentPoint['date'])}, ${yScale(currentPoint['close'])})`);
 
         focus.select('line.x')
@@ -223,39 +195,40 @@ function initialize_chart(data) {
     }
 
     /* Legends */
-    let updateLegends = currentData => {d3.selectAll('.lineLegend').remove();
+    function updateLegends(currentData) {
+        d3.selectAll('.lineLegend').remove();
 
-    let legendKeys = Object.keys(data[0]);
-    let lineLegend = svg.selectAll('.lineLegend')
-        .data(legendKeys)
-        .enter()
-        .append('g')
-        .attr('class', 'lineLegend')
-        .attr('transform', (d, i) => {return `translate(0, ${i * 20})`;});
-    lineLegend.append('text')
-        .text(d => {
-            str_d = String(d)
-            str_d = str_d.charAt(0).toUpperCase() + str_d.slice(1);
-            if (d === 'date') {
-                return `${str_d}: ${currentData[d].toLocaleDateString()}`;
-            } 
-            else if (d === 'high' || d === 'low' || d === 'open' || d === 'close') {
-                return `${str_d}: ${currentData[d].toFixed(2)}`;
-            } 
-            else {
-                return `${str_d}: ${currentData[d]}`;
-            }
-        })
-        .style('fill', 'white')
-        .attr('transform', 'translate(15,9)'); //align texts with boxes
+        let legendKeys = Object.keys(data[0]);
+        let lineLegend = svg.selectAll('.lineLegend')
+            .data(legendKeys)
+            .enter()
+            .append('g')
+            .attr('class', 'lineLegend')
+            .attr('transform', (d, i) => { return `translate(0, ${i * 20})`; });
+        lineLegend.append('text')
+            .text(d => {
+                str_d = String(d)
+                str_d = str_d.charAt(0).toUpperCase() + str_d.slice(1);
+                if (d === 'date') {
+                    return `${str_d}: ${currentData[d].toLocaleDateString()}`;
+                }
+                else if (d === 'high' || d === 'low' || d === 'open' || d === 'close') {
+                    return `${str_d}: ${currentData[d].toFixed(2)}`;
+                }
+                else {
+                    return `${str_d}: ${currentData[d]}`;
+                }
+            })
+            .style('fill', 'black')
+            .attr('transform', 'translate(15,9)'); //align texts with boxes
     };
 
     /* Volume series bars */
     let volData = data.filter(d => d['volume'] !== null && d['volume'] !== 0);
 
-    let yMinVolume = d3.min(volData, d => {return Math.min(d['volume']);});
+    let yMinVolume = d3.min(volData, d => { return Math.min(d['volume']); });
 
-    let yMaxVolume = d3.max(volData, d => {return Math.max(d['volume']);});
+    let yMaxVolume = d3.max(volData, d => { return Math.max(d['volume']); });
 
     let yVolumeScale = d3
         .scaleLinear()
@@ -266,19 +239,19 @@ function initialize_chart(data) {
         .data(volData)
         .enter()
         .append('rect')
-        .attr('x', d => {return xScale(d['date']);})
-        .attr('y', d => {return yVolumeScale(d['volume']);})
+        .attr('x', d => { return xScale(d['date']); })
+        .attr('y', d => { return yVolumeScale(d['volume']); })
         .attr('class', 'vol')
         .attr('fill', (d, i) => {
             if (i === 0) {
                 return '#03a678';
-            } 
+            }
             else {
                 return volData[i - 1].close > d.close ? 'green' : 'red'; // green bar if price is rising during that period, and red when price  is falling
             }
         })
         .attr('width', 1)
-        .attr('height', d => {return height - yVolumeScale(d['volume']);});
+        .attr('height', d => { return height - yVolumeScale(d['volume']); });
 }
 
 // Execute code
