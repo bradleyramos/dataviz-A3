@@ -1,10 +1,10 @@
-# Dataviz A3
+# Dataviz A3: Interactive Visualization
 
 Submission from Bradley Ramos and Nicolas Hammer for CS 396: Data Visualization in Winter 2021.
 
 ## Installation
 
-For expansive stock selection, we are interacting with the [Yahoo Finance API](https://blog.api.rakuten.net/api-tutorial-yahoo-finance/), which requires the [npm unirest package.](https://www.npmjs.com/package/unirest). For setup, enter the root directory and run:
+For expansive stock selection, we are interacting with the [Yahoo Finance API](https://blog.api.rakuten.net/api-tutorial-yahoo-finance/), which requires the [npm unirest package](https://www.npmjs.com/package/unirest). For setup, enter the root directory and run:
 
 ```bash
 npm install unirest
@@ -27,3 +27,4 @@ Then, before you start making changes run the following code in a separate termi
 ```bash
 watchify chart.js -o bundle.js
 ```
+Once you have watchify and your http server running, changes made in chart.js will automaticlaly be re-bundled in bundle.js (which includes the package for API requests) and display on your browser.
