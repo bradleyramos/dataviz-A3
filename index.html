@@ -9,13 +9,22 @@
   <div class = "flex-container">
     <div class = "chatbot">
       <img src="images/bot_icon.png" alt="ChatBot"/>
-      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite sector to get started.</div>
+      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite industry to get started.</div>
     </div>
-    <div class = "interactions">
-      <div class = "timeline"></div>
-      <div class = "content">
-        <h2>2018</h2>
-        <p>Lorem ipsum.. 2</p>
+    <div class = "sectors">
+      <div class = "tabs">
+        <button class="tablink" onclick="selectSector(event, 'Technology')">Technology</button>
+        <button class="tablink" onclick="selectSector(event, 'Finance')">Finance</button>
+        <button class="tablink" onclick="selectSector(event, 'Transportation')">Transportation</button>
+      </div>
+      <div id = "Technology" class = "sector-content">
+        Tech
+      </div>
+      <div id = "Finance" class = "sector-content">
+        Fin
+      </div>
+      <div id = "Transportation" class = "sector-content">
+        Transport
       </div>
     </div>
     <div class = "flex-item">
@@ -27,4 +36,26 @@
     <div id = "chart"></div>
   </div>
   <script src = "./bundle.js"></script>
+  <script>
+    // Update sector tabs, using https://www.w3schools.com/howto/howto_js_tabs.asp
+    function selectSector(evt, sectorName) {
+        var i, tabcontent, tablinks;
+      
+        // Get all elements with class="sector-content" and hide them
+        tabcontent = document.getElementsByClassName("sector-content");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+      
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablink");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+      
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(sectorName).style.display = "block";
+        evt.currentTarget.className += " active";
+      }
+  </script>
 </body>

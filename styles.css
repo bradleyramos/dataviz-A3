@@ -35,7 +35,7 @@ body {
     height: 30%;
     background-color: lightblue;
     border-radius: 10px;
-    box-shadow: 1px 1px rgb(0, 48, 63);
+    box-shadow: 1px 1px 1px 1px rgb(0, 34, 45);
 }
 /* Add arrow to the message box (pointing left) */
 .message::before {
@@ -48,6 +48,46 @@ body {
     border: medium solid lightblue;
     border-width: 10px 10px 10px 0;
     border-color: transparent lightblue transparent transparent;
+}
+
+.tabs {
+    display: flex;
+    margin-top: 5%;
+    justify-content: space-around;
+    border: 1px solid #ccc;
+    background-color: lightblue;
+    border-radius: 15px 15px 0px 0px;
+    width: 80vw;
+}
+/* Style buttons in tab bar */
+.tabs button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    width: 20vw;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+.tabs button:hover {
+    background-color: #ddd;
+}
+.tabs button.active {
+    background-color: #ccc;
+}
+
+.sector-content {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    animation: fadeEffect 3s;
+}
+/* Go from zero to full opacity */
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
   }
 
 .flex-item {
@@ -64,32 +104,3 @@ body {
 a {
     color: #67809f;
 }
-
-.interactions {
-    display: flex;
-    width: 100%;
-    height: 45vh;
-    margin-top: 5%;
-}
-/* The circles on the timeline */
-/* .interactions::after {
-    content: '';
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    background-color: white;
-    border: 4px solid #FF9F55;
-    top: 15px;
-    border-radius: 50%;
-    z-index: 1;
-  } */
-
-.timeline {
-    width: 6px;
-    background-color: rgb(7, 104, 136);
-    top: 10%;
-    bottom: 0;
-    left: 50%;
-    margin-left: 10px;
-    border-radius: 30%;
-  }
