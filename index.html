@@ -13,6 +13,7 @@
       <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite industry to get started.</div>
     </div>
     <div class = "sectors">
+      <div class = "sect-title">Choose a Sector:</div>
       <div class = "tabs">
         <button class="tablink" onclick="selectSector(event, 'Technology')">Technology</button>
         <button class="tablink" onclick="selectSector(event, 'Finance')">Finance</button>
@@ -23,20 +24,21 @@
         <div>Current Category: <span id = "current-category"></span></div>
       
         <div id = "categories">
+          <div class = "sect-title">Choose a Category:</div>
           <div class = "category-select">
             <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
             <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Active</button>
             <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
           </div>
           <div id = "Winning" class = "cat-content">
-            Winning
+            Winning stocks...
             <button class = "min" onclick="this.parentElement.style.display='none'">Minimize</button> 
           </div>
           <div id = "Active" class = "cat-content">
-            Active
+            Active stocks...
           </div>
           <div id = "Losing" class = "cat-content">
-            Losing
+            Losing stocks...
           </div>
         </div>
       </div>
