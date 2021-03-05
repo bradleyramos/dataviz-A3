@@ -20,6 +20,7 @@ async function queryData() {
             throw new Error(response.error);
         }
         else {
+            document.getElementById("chat_message").innerHTML = "You did it! Make sure you select the time period you are interested in."
             data = loadData(response.body);
             createChart(data);
         }

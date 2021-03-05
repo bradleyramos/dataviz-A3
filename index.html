@@ -3,7 +3,7 @@
 <meta name = "viewport" content = "width=device-width, initial-scale=1">
 <link rel = "stylesheet" href = "./styles.css" type = "text/css" media = "screen" charset = "utf-8">
 <script src="https://d3js.org/d3.v6.min.js"></script>
-<script src="student.js" type="text/javascript"></script>
+<script type="text/javascript" src="North_America.json"></script>
 </head>
 
 <body>
@@ -18,31 +18,28 @@
         <button class="tablink" onclick="selectSector(event, 'Finance')">Finance</button>
         <button class="tablink" onclick="selectSector(event, 'Transportation')">Transportation</button>
       </div>
-      <div id = "Technology" class = "sector-content">
-        Tech
+      <div id = "sector-selected" class = "sector-content">
+        <div>Current Sector: <span id = "current-sector"></span></div>
+        <div>Current Category: <span id = "current-category"></span></div>
+      
+        <div id = "categories">
+          <div class = "category-select">
+            <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
+            <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Active</button>
+            <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
+          </div>
+          <div id = "Winning" class = "cat-content">
+            Winning
+            <button class = "min" onclick="this.parentElement.style.display='none'">Minimize</button> 
+          </div>
+          <div id = "Active" class = "cat-content">
+            Active
+          </div>
+          <div id = "Losing" class = "cat-content">
+            Losing
+          </div>
+        </div>
       </div>
-      <div id = "Finance" class = "sector-content">
-        Fin
-      </div>
-      <div id = "Transportation" class = "sector-content">
-        Transport
-      </div>
-    </div>
-    <div class = "categories">
-      <div class = "category-select">
-          <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
-          <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Active</button>
-          <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
-        </div>
-        <div id = "Winning" class = "cat-content">
-          Winning
-        </div>
-        <div id = "Active" class = "cat-content">
-          Active
-        </div>
-        <div id = "Losing" class = "cat-content">
-          Losing
-        </div>
     </div>
     <div class = "flex-item">
       <label for = "stock_input">Please provide stock symbol:</label>
@@ -54,39 +51,59 @@
   </div>
   <script src = "./bundle.js"></script>
   <script>
+    // var myData = JSON.parse(data);
+    // console.log(data[0])
+    // var currSector = '';
+    // var currCategory = '';
+    // function filterBySector(sectorName) {
+    //   var matched_stocks = sector_data.filter((v) => v.Sector.indexOf(stock)>-1);
+    //   if (!matched_stocks.length) alert('Could not fetch that sector.');
+    //   else {
+    //     console.log(matched_stocks)
+    //   }
+    // }
+    // filterBySector('Technology');
+    
+
+
+
     // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp
     function selectSector(evt, sectorName) {
         var i, tabcontent, tablinks;
         // Get all elements with class="sector-content" and hide them
-        tabcontent = document.getElementsByClassName("sector-content");
-        for (i = 0; i < tabcontent.length; i++) {
-          tabcontent[i].style.display = "none";
-        }
+        tabcontent = document.getElementById("sector-selected").style.display = "flex";
         // Get all elements with class="tablinks" and remove the class "active"
         tablinks = document.getElementsByClassName("tablink");
         for (i = 0; i < tablinks.length; i++) {
           tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
         // Show the current tab, and add an "active" class to the button that opened the tab
-        document.getElementById(sectorName).style.display = "block";
+        // document.getElementById("sector-selected").style.display = "block";
         evt.currentTarget.className += " active";
+        // Show the next step
+        document.getElementById("categories").style.display = "flex";
+        // Update chat bot to indicate the next step.
+        document.getElementById("chat_message").innerHTML = "Great! Now decide if you want to know more about stocks that are going up (winning), undetermined (active), or going down (losing)."
+        // document.getElementById("catbutton-win").click();
+        currSector = sectorName;
+        document.getElementById("current-sector").innerHTML = currSector;
       }
-      function selectCat(evt, catName) {
+
+      function selectCat(evt, catName) { // same as above but for category
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("cat-content");
         for (i = 0; i < tabcontent.length; i++) {
           tabcontent[i].style.display = "none";
         }
-      
-        // Get all elements with class="tablinks" and remove the class "active"
         tablinks = document.getElementsByClassName("catlink");
         for (i = 0; i < tablinks.length; i++) {
           tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
-      
-        // Show the current tab, and add an "active" class to the button that opened the tab
         document.getElementById(catName).style.display = "block";
         evt.currentTarget.className += " active";
+        document.getElementById("chat_message").innerHTML = "You're almost there! Select a stock that seems interesting to take a look at the trends."
+        currCategory = catName;
+        document.getElementById("current-category").innerHTML = currCategory;
       }
   </script>
 </body>

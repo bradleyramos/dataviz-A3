@@ -80,7 +80,9 @@ body {
 
 .sector-content {
     display: none;
-    padding: 6px 12px;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
     border: 1px solid #ccc;
     border-top: none;
     animation: fadeEffect 1s;
@@ -91,11 +93,15 @@ body {
     to {opacity: 1;}
 }
 
+#categories {
+    display: none;
+    flex-direction: column;
+}
+
 /* Style category selection */
 .category-select {
     display: flex;
     margin-top: 5%;
-    justify-content: space-around;
     border: 1px solid rgb(155, 155, 155);
     background-color: lightblue;
     border-radius: 15px 15px 15px 15px;
@@ -131,10 +137,12 @@ body {
 
 .cat-content {
     display: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
+    padding: 12px 12px;
     animation: fadeEffect 3s;
+}
+
+.min {
+    float: right;
 }
 
 .flex-item {
