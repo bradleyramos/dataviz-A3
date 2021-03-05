@@ -27,4 +27,4 @@ Then, before you start making changes run the following code in a separate termi
 ```bash
 watchify chart.js -o bundle.js
 ```
-Once you have watchify and your http server running, changes made in chart.js will automaticlaly be re-bundled in bundle.js (which includes the package for API requests) and display on your browser.
+Once you have watchify and your http server running, changes made in chart.js will automatically re-bundle in bundle.js (which includes the package for API requests) and display on your browser.
