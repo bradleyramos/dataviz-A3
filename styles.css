@@ -1,5 +1,6 @@
 body {
     background:white;
+    font-family: Helvetica, sans-serif;
 }
 
 #chart {
@@ -10,20 +11,44 @@ body {
 }
 
 .flex-container {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
-  
-    flex-flow: row nowrap;
-    justify-content: flex-start;
+    flex-flow: column wrap;
+    justify-items: center;
     align-items: center;
 }
+
+.chatbot {
+    display: flex;
+    width: 100%;
+    height: 100px;
+    justify-self: flex-start;
+}
+
+.message {
+    display: flex;
+    margin-top: 20px;
+    margin-left: 20px;
+    align-items: center;
+    padding: 1%;
+    padding-left: 2%;
+    padding-right: 2%;
+    height: 30%;
+    background-color: lightblue;
+    border-radius: 10px;
+    box-shadow: 1px 1px rgb(0, 48, 63);
+}
+/* Add arrow to the message box (pointing left) */
+.message::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    width: 0;
+    left: 120px;
+    z-index: 1;
+    border: medium solid lightblue;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent lightblue transparent transparent;
+  }
 
 .flex-item {
     color: black;
@@ -31,6 +56,40 @@ body {
     padding: 1em;
 }
 
+.chart-container {
+    width: 60%;
+    margin: 10%;
+}
+
 a {
     color: #67809f;
 }
+
+.interactions {
+    display: flex;
+    width: 100%;
+    height: 45vh;
+    margin-top: 5%;
+}
+/* The circles on the timeline */
+/* .interactions::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background-color: white;
+    border: 4px solid #FF9F55;
+    top: 15px;
+    border-radius: 50%;
+    z-index: 1;
+  } */
+
+.timeline {
+    width: 6px;
+    background-color: rgb(7, 104, 136);
+    top: 10%;
+    bottom: 0;
+    left: 50%;
+    margin-left: 10px;
+    border-radius: 30%;
+  }

@@ -7,13 +7,24 @@
 
 <body>
   <div class = "flex-container">
+    <div class = "chatbot">
+      <img src="images/bot_icon.png" alt="ChatBot"/>
+      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite sector to get started.</div>
+    </div>
+    <div class = "interactions">
+      <div class = "timeline"></div>
+      <div class = "content">
+        <h2>2018</h2>
+        <p>Lorem ipsum.. 2</p>
+      </div>
+    </div>
     <div class = "flex-item">
       <label for = "stock_input">Please provide stock symbol:</label>
 
       <input type = "text" id = "stock_input" required minlength = '1' maxlength = '4' size = '6'>
       <input type = "button" id = "enter_button" value = "Enter">
     </div>
+    <div id = "chart"></div>
   </div>
-  <div id = "chart"></div>
   <script src = "./bundle.js"></script>
 </body>
