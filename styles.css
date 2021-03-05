@@ -54,10 +54,10 @@ body {
     display: flex;
     margin-top: 5%;
     justify-content: space-around;
-    border: 1px solid #ccc;
+    border: 1px solid rgb(155, 155, 155);
     background-color: lightblue;
     border-radius: 15px 15px 0px 0px;
-    width: 80vw;
+    width: 90vw;
 }
 /* Style buttons in tab bar */
 .tabs button {
@@ -66,7 +66,8 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
-    width: 20vw;
+    width: 30vw;
+    border-radius: 15px 15px 0px 0px;
     padding: 14px 16px;
     transition: 0.3s;
 }
@@ -82,13 +83,59 @@ body {
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
-    animation: fadeEffect 3s;
+    animation: fadeEffect 1s;
 }
 /* Go from zero to full opacity */
 @keyframes fadeEffect {
     from {opacity: 0;}
     to {opacity: 1;}
-  }
+}
+
+/* Style category selection */
+.category-select {
+    display: flex;
+    margin-top: 5%;
+    justify-content: space-around;
+    border: 1px solid rgb(155, 155, 155);
+    background-color: lightblue;
+    border-radius: 15px 15px 15px 15px;
+    width: 60vw;
+}
+.category-select button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    width: 20vw;
+    padding: 10px 16px;
+    transition: 0.3s;
+}
+.category-select button:hover {
+    background-color: #ddd;
+}
+.category-select button.active {
+    background-color: #ccc;
+}
+#catbutton-win {
+    /* background-color: rgb(103, 213, 103); */
+    border-radius: 15px 0px 0px 15px;
+}
+#catbutton-act {
+    /* background-color: rgb(177, 176, 176); */
+}
+#catbutton-lose {
+    /* background-color: rgb(237, 114, 114); */
+    border-radius: 0px 15px 15px 0px;
+}
+
+.cat-content {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    animation: fadeEffect 3s;
+}
 
 .flex-item {
     color: black;
