@@ -1,30 +1,43 @@
 body {
     font: 15px sans-serif;
-  }
+}
 
-  .axis path,
-  .axis line {
+.axis path,
+.axis line {
+fill: none;
+stroke: #000;
+shape-rendering: crispEdges;
+}
+
+.y.axis path {
+display: none;
+}
+
+.overlay1 {
     fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
+    stroke: none;
+    pointer-events: all;
+}
 
-  .y.axis path {
-    display: none;
-  }
+.focusLine {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 0.5px;
+}
 
-  .overlay1 {
-      fill: none;
-      stroke: none;
-      pointer-events: all;
-  }
+.focusCircle {
+    fill: red;
+}
 
-  .focusLine {
-      fill: none;
-      stroke: steelblue;
-      stroke-width: 0.5px;
-  }
-
-  .focusCircle {
-      fill: red;
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: all;
   }

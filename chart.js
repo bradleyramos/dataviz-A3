@@ -78,19 +78,28 @@ function loadData(data) {
 
 // Compute moving average
 function movingAverage(data, numberOfPricePoints) {
-    return data.map((row, index, total) => {
+    let dates = [];
+    let averages = new Array(data[0].length).fill(0);
+    for (let j = 0; j < data[0].length; j++) {
+        dates.push(data[0][j][0]);
+        for (let i = 0; i < data.length; i++) {
+            averages[j] += data[i][j][1]
+        }
+    }
+
+    return averages.map((row, index, total) => {
         let start = Math.max(0, index - numberOfPricePoints);
         let end = index;
         let subset = total.slice(start, end + 1);
-        let sum = subset.reduce((a, b) => a + b["close"], 0);
-        return { date: row["date"], average: sum / subset.length };
+        let sum = subset.reduce((a, b) => a + b, 0);
+        return [dates[index], sum / (subset.length * data.length)];
     });
 }
 
 // Create chart
 function createChart(symbols, data) {
     /* Setup container */
-    const container_width = 800;
+    const container_width = 850;
     const container_height = 400
 
     let svg = d3.select("body")
@@ -98,14 +107,15 @@ function createChart(symbols, data) {
         .attr("width", container_width)
         .attr("height", container_height);
 
-    let margin = { top: 50, left: 50, bottom: 50, right: 50 };
+    let margin = { top: 50, left: 50, bottom: 50, right: 100 };
 
     let height = container_height - margin.top - margin.bottom;
     let width = container_width - margin.right - margin.left;
 
     let g = svg.append('g')
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
-        .attr("overflow", "hidden");
+        .attr("overflow", "hidden")
+        .attr("pointer-events", "all");
 
     /* Extract important info from data */
     let relevant_data = [];
@@ -130,7 +140,7 @@ function createChart(symbols, data) {
         .domain([minX, maxX]);
 
     let yScale = d3.scaleLinear()
-        .range([height, 0])
+        .range([height, 2])
         .domain([minY, maxY]);
 
     let line = d3.line()
@@ -150,7 +160,7 @@ function createChart(symbols, data) {
         .on("end", brushEnded);
     let idleTimeout;
     let idleDelay = 350;
-    
+
     svg.append('g')
         .attr("class", "brush")
         .call(brush);
@@ -166,9 +176,10 @@ function createChart(symbols, data) {
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr('y', 10)
-        .attr("dy", ".1em")
-        .attr("text-anchor", "end")
+        .attr('y', 0 - margin.left)
+        .attr('x', 0 - (height / 2))
+        .attr("dy", "1em")
+        .attr("text-anchor", "middle")
         .attr("fill", "rgb(54, 54, 54)")
         .attr("font-size", "1.2em")
         .text("Closing Price (USD)");
@@ -182,18 +193,31 @@ function createChart(symbols, data) {
         .attr("width", width)
         .attr("height", height);
 
-    /* Plot legend 
-    svg.append('g')
-        .attr("class", "legend")
-        .attr("transform", `translate(${(margin.left + 20)}, ${margin.top})`)
-        .style("font-size", "15px")
-        .call(d3.legend);
-    */
+    /* Plot legend */
+    let legend = svg.selectAll(".lineLegend")
+        .data(symbols)
+        .enter()
+        .append('g')
+        .attr("class", "lineLegend")
+        .attr("transform", (d, i) => `translate(${(width + margin.right * 0.75)}, ${(margin.top + i * 20)})`);
 
-    /* Plot line and circles */
+    legend.append("text")
+        .text(d => d)
+        .attr("transform", "translate(15, 9)");
+
+    legend.append("rect")
+        .attr("fill", (d, i) => colors(i))
+        .attr("width", 10)
+        .attr("height", 10);
+
+    /* Plot line and circles with tooltips*/
     let main = g.append('g')
         .attr("class", "main")
         .attr("clip-path", "url(#clip)");
+
+    let div = g.append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     for (let i = 0; i < relevant_data.length; i++) {
         main.append("path")
@@ -203,21 +227,44 @@ function createChart(symbols, data) {
             .attr("stroke-width", 2)
             .attr("fill", "none")
             .attr("class", "line")
-            //.attr("data-legend", d => symbols)
-            //    .style("stroke", d => colors(i));
+            .attr("pointer-events", "none");
 
         main.selectAll(".circle")
             .data(relevant_data[i])
             .enter()
             .append("circle")
-            .attr("cx", d => xScale(d[0]))
-            .attr("cy", d => yScale(d[1]))
-            .attr('r', 2)
-            .attr("fill", "white")
-            .attr("stroke", d => colors(i))
-            .attr("stroke-width", 1)
-            .attr("class", "circles");
+                .attr("cx", d => xScale(d[0]))
+                .attr("cy", d => yScale(d[1]))
+                .attr('r', 2)
+                .attr("fill", "white")
+                .attr("stroke", d => colors(i))
+                .attr("stroke-width", 1)
+                .attr("class", "circles")
+                .attr("pointer-events", "all")
+                .on("mouseover", function (event, d) {
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", 0.9);
+                    div.html(d3.timeFormat("%x")(d[0]) + "<br/>" + d[1])
+                        .style("left", (event.pageX) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", (event, d) => { 
+                    div.transition()
+                        .duration(500)
+                        .style("opacity", 0); 
+                });
     }
+
+    /* Plot moving average */
+    main.append("path")
+        .datum(movingAverage(relevant_data, 49))
+        .attr('d', line)
+        .attr("stroke", "orange")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke-width", 2)
+        .attr("fill", "none")
+        .attr("class", "line");
 
     /* Voronoi diagram */
     let vorData = d3.merge(relevant_data);
@@ -244,13 +291,17 @@ function createChart(symbols, data) {
         .attr("class", "circle focusCirle");
 
     svg.select(".overlay")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`)
+        .attr("transform", `translate(${margin.left}, 0)`)
         .attr("width", width)
         .attr("height", height)
-        .on("mouseover", () => focus.style("display", null))
-        .on("mouseout", () => focus.style("display", "none"))
+        .on("mouseover", (event) => { focus.style("display", null); })
+        .on("mouseout", () => { focus.style("display", "none"); })
         .on("mousemove", function (event) {
+            div.transition()
+                .style("opacity", 0);
+
             let [mx, my] = d3.pointer(event, this);
+            my = my - margin.top;
 
             let site = voronoi_diagram.find(mx, my, voronoi_radius);
 
