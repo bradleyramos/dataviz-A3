@@ -15,6 +15,7 @@ async function driver() {
         data.push(stock_data);
     }
 
+    d3.select("svg").remove(); // clear out previous chart
     createChart(symbols, data);
 }
 
