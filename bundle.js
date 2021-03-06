@@ -157,13 +157,14 @@ function createChart(symbols, data) {
 
     /* Create brush */
     let brush = d3.brushX()
-        .extent([[0, margin.top], [width + margin.right, height + margin.bottom]])
+        .extent([[0, 0], [width, height]])
         .on("end", brushEnded);
     let idleTimeout;
     let idleDelay = 350;
 
     svg.append('g')
         .attr("class", "brush")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`)
         .call(brush);
 
     /* Plot axes */
@@ -211,14 +212,10 @@ function createChart(symbols, data) {
         .attr("width", 10)
         .attr("height", 10);
 
-    /* Plot line and circles with tooltips*/
+    /* Plot line and circles */
     let main = g.append('g')
         .attr("class", "main")
         .attr("clip-path", "url(#clip)");
-
-    let div = g.append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     for (let i = 0; i < relevant_data.length; i++) {
         main.append("path")
@@ -240,21 +237,7 @@ function createChart(symbols, data) {
                 .attr("fill", "white")
                 .attr("stroke", d => colors(i))
                 .attr("stroke-width", 1)
-                .attr("class", "circles")
-                .attr("pointer-events", "all")
-                .on("mouseover", function (event, d) {
-                    div.transition()
-                        .duration(200)
-                        .style("opacity", 0.9);
-                    div.html(d3.timeFormat("%x")(d[0]) + "<br/>" + d[1])
-                        .style("left", (event.pageX) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", (event, d) => { 
-                    div.transition()
-                        .duration(500)
-                        .style("opacity", 0); 
-                });
+                .attr("class", "circles");
     }
 
     /* Plot moving average */
@@ -277,8 +260,9 @@ function createChart(symbols, data) {
 
     let voronoi_radius = width;
 
-    /* Focus */
-    let focus = g.append('g').style("display", "none");
+    /* Focus & Overlay */
+    let focus = g.append('g')
+        .style("display", "none");
 
     focus.append("line")
         .attr("id", "focusLineX")
@@ -291,18 +275,26 @@ function createChart(symbols, data) {
         .attr('r', 2)
         .attr("class", "circle focusCirle");
 
+    let tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .attr("id", "tooltip")
+        .style("opacity", 0);
+    
+    g.on("mouseout", () => {
+        tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+             });
+
     svg.select(".overlay")
-        .attr("transform", `translate(${margin.left}, 0)`)
         .attr("width", width)
         .attr("height", height)
-        .on("mouseover", (event) => { focus.style("display", null); })
-        .on("mouseout", () => { focus.style("display", "none"); })
+        .on("mouseover", () => { focus.style("display", null); })
+        .on("mouseout", () => { 
+            focus.style("display", "none")})
         .on("mousemove", function (event) {
-            div.transition()
-                .style("opacity", 0);
-
             let [mx, my] = d3.pointer(event, this);
-            my = my - margin.top;
 
             let site = voronoi_diagram.find(mx, my, voronoi_radius);
 
@@ -318,6 +310,17 @@ function createChart(symbols, data) {
             focus.select("#focusLineY")
                 .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
                 .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
+                
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+            tooltip.html(`${d3.timeFormat("%x")(xScale.invert(x))}<br/>$${yScale.invert(y).toFixed(2)}`)
+                .style("left", (margin.left + 15 + x) + "px")
+                .style("top", (margin.top + -10 + y) + "px");
+        })
+        .on("dblclick", () => {
+            xScale.domain([minX, maxX]);
+            zoom();
         });
 
     /* Brushing for zooming */
@@ -328,7 +331,7 @@ function createChart(symbols, data) {
             xScale.domain([minX, maxX]);
         }
         else {
-            xScale.domain([xScale.invert(selection[0] - margin.left), xScale.invert(selection[1] - margin.left)]);
+            xScale.domain([xScale.invert(selection[0]), xScale.invert(selection[1])]);
             svg.select(".brush").call(brush.move, null);
         }
         zoom();
@@ -354,11 +357,6 @@ function createChart(symbols, data) {
             .y(d => yScale(d[1]))
             .size([container_width, container_height])(vorData);
     }
-
-    svg.on("dblclick", () => {
-        xScale.domain([minX, maxX]);
-        zoom();
-    });
 }
 },{"unirest":174}],2:[function(require,module,exports){
 'use strict';
