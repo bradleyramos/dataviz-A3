@@ -25,7 +25,7 @@
           <!-- <div class = "sect-title">Choose a Category:</div> -->
           <div class = "category-select">
             <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
-            <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">No Change</button>
+            <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Constant</button>
             <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
           </div>
           <div id = "stocks-container">
@@ -153,7 +153,7 @@
         // Show the next step
         document.getElementById("categories").style.display = "flex";
         // Update chat bot to indicate the next step.
-        document.getElementById("chat_message").innerHTML = "Great! Now decide if you want to know more about stocks that are going up (winning), undetermined (active), or going down (losing)."
+        document.getElementById("chat_message").innerHTML = "Great! Now decide if you want to know more about stocks that are going up (Winning), undetermined (Constant), or going down (Losing)."
         // document.getElementById("catbutton-win").click();
         currSector = sectorName;
         if (currCategory) {
