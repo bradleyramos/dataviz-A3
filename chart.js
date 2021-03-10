@@ -1,5 +1,6 @@
 // Make our API Calls
 let unirest = require("unirest");
+const { NONE } = require("./bundle");
 
 // Execute code
 document.getElementById("enter_button").onclick = driver;
@@ -103,6 +104,12 @@ function createChart(symbols, data) {
     const container_width = 850;
     const container_height = 400
 
+    let old_svg = d3.select("svg");
+    if (old_svg) {
+        //document.getElementById("tooltip").style.display = "none";
+        old_svg.remove();
+    }
+        
     let svg = d3.select("body")
         .append("svg")
         .attr("width", container_width)
@@ -315,8 +322,8 @@ function createChart(symbols, data) {
                 .duration(200)
                 .style("opacity", 0.9);
             tooltip.html(`${d3.timeFormat("%x")(xScale.invert(x))}<br/>$${yScale.invert(y).toFixed(2)}`)
-                .style("left", (margin.left + 15 + x) + "px")
-                .style("top", (margin.top + -10 + y) + "px");
+                .style("left", (margin.left + x) + "px")
+                .style("top", -(margin.top  + y) + "px");
         })
         .on("dblclick", () => {
             xScale.domain([minX, maxX]);
