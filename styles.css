@@ -3,11 +3,15 @@ body {
     font-family: Helvetica, sans-serif;
 }
 
-#chart {
-    background: lightgrey;
-    color: black;
-    width: 100%;
-    height: 100%;
+.axis path,
+.axis line {
+fill: none;
+stroke: #000;
+shape-rendering: crispEdges;
+}
+
+.y.axis path {
+display: none;
 }
 
 .flex-container {
@@ -56,9 +60,9 @@ body {
 }
 .sect-title {
     text-align: center;
-    width: 60%;
-    margin-left: 20%;
-    margin-top: 3%;
+    width: 50%;
+    margin-left: 25%;
+    margin-top: 25px;
     padding: 1%;
     border: 1px solid rgb(155, 155, 155);
     border-radius: 15px 15px 0px 0px;
@@ -66,7 +70,7 @@ body {
 }
 .tabs {
     display: flex;
-    margin-top: 0;
+    margin-top: 3%;
     justify-content: space-around;
     background-color: lightblue;
     border-radius: 20px 20px 20px 20px;
@@ -117,10 +121,10 @@ body {
 /* Style category selection */
 .category-select {
     display: flex;
-    margin-top: 0;
+    margin-top: 1%;
     /* border: 1px solid rgb(155, 155, 155); */
     background-color: lightblue;
-    border-radius: 15px 15px 0px 0px;
+    border-radius: 15px 15px 15px 15px;
     width: 60vw;
 }
 .category-select button {
@@ -141,20 +145,28 @@ body {
 }
 #catbutton-win {
     /* background-color: rgb(103, 213, 103); */
-    border-radius: 15px 0px 0px 0px;
+    border-radius: 15px 0px 0px 15px;
 }
 #catbutton-act {
     /* background-color: rgb(177, 176, 176); */
 }
 #catbutton-lose {
     /* background-color: rgb(237, 114, 114); */
-    border-radius: 0px 15px 0px 0px;
+    border-radius: 0px 15px 15px 0px;
+}
+
+#stocks-container {
+    display: none;
+    flex-direction: row;
+    justify-items: space-around;
+    justify-content: center;
 }
 
 .stocks {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    width: 30vw;
 }
 .stock {
     display: flex;
@@ -191,16 +203,38 @@ body {
     background-color: #ccc;
 }
 
+.selected-container {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+}
+.selected-container input {
+    margin-left: 45%;
+    margin-top: 15px;
+    width: 50%;
+}
+
+.selected-title {
+    text-align: center;
+    width: 60%;
+    margin-left: 40%;
+    margin-top: 25px;
+    padding: 1%;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 15px 15px 0px 0px;
+    border-bottom: none;
+}
+
 .selected-symbols {
-    margin-top: 3%;
     display: flex;
     align-items: center;
     justify-items: center;
     margin-left: 20%;
     margin-right: 20%;
     flex-direction: row;
-    width: 60%;
-    height: 50px;
+    flex-wrap: wrap;
+    width: 25vw;
+    min-height: 50px;
     border: 1px solid rgb(155, 155, 155);
 }
 .symbol {
@@ -210,14 +244,23 @@ body {
     border-radius: 15px;
 }
 
+#submit-stocks {
+    display: none;
+}
+
 .min {
     float: right;
 }
+.overlay1 {
+    fill: none;
+    stroke: none;
+    pointer-events: all;
+}
 
-.flex-item {
-    color: black;
-    text-align: left;
-    padding: 1em;
+.focusLine {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 0.5px;
 }
 
 .chart-container {
@@ -228,3 +271,19 @@ body {
 a {
     color: #67809f;
 }
+.focusCircle {
+    fill: red;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightgrey;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: all;
+  }

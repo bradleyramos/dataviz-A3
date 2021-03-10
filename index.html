@@ -3,6 +3,7 @@
 <meta name = "viewport" content = "width=device-width, initial-scale=1">
 <link rel = "stylesheet" href = "./styles.css" type = "text/css" media = "screen" charset = "utf-8">
 <script src="https://d3js.org/d3.v6.min.js"></script>
+<script src="https://d3js.org/d3-voronoi.v1.min.js"></script>
 </head>
 
 <body>
@@ -12,7 +13,7 @@
       <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite industry to get started.</div>
     </div>
     <div class = "sectors">
-      <div class = "sect-title">Choose a Sector:</div>
+      <!-- <div class = "sect-title">Choose a Sector:</div> -->
       <div class = "tabs">
         <button class="tablink" id="tablink-tech" onclick="selectSector(event, 'Technology')">Technology</button>
         <button class="tablink" id="tablink-fin" onclick="selectSector(event, 'Finance')">Finance</button>
@@ -21,34 +22,43 @@
       <div id = "sector-selected" class = "sector-content">
       
         <div id = "categories">
-          <div class = "sect-title">Choose a Category:</div>
+          <!-- <div class = "sect-title">Choose a Category:</div> -->
           <div class = "category-select">
             <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
             <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">No Change</button>
             <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
           </div>
-          <div id = "Winning" class = "cat-content">
-            <ul class="stocks" id="WinningList">
-            </ul>
-          </div>
-          <div id = "Active" class = "cat-content">
-            <ul class="stocks" id="ActiveList">
-            </ul>
-          </div>
-          <div id = "Losing" class = "cat-content">
-            <ul class="stocks" id="LosingList">
-            </ul>
+          <div id = "stocks-container">
+            <div class = "stocks-list">
+              <div class = "sect-title">Filtered Stocks:</div>
+              <div id = "Winning" class = "cat-content">
+                  <ul class="stocks" id="WinningList">
+                  </ul>
+                </div>
+                <div id = "Active" class = "cat-content">
+                  <ul class="stocks" id="ActiveList">
+                  </ul>
+                </div>
+                <div id = "Losing" class = "cat-content">
+                  <ul class="stocks" id="LosingList">
+                  </ul>
+                </div>
+            </div>
+            <div class = "selected-container">
+              <div class = "selected-title">Selected:</div>
+              <div id = "selected" class = "selected-symbols"></div>
+              <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
+              <input type = "button" id = "enter_button" value = "Submit Stock[s]">
+              <div id="submit-stocks"></div>
+            </div>
           </div>
         </div>
       </div>
-      <div id = "selected" class = "selected-symbols">
-      </div>
     </div>
     <div class = "flex-item">
-      <label for = "stock_input">Please provide stock symbol:</label>
-
-      <input type = "text" id = "stock_input" required minlength = '1' maxlength = '4' size = '6'>
-      <input type = "button" id = "enter_button" value = "Enter">
+      <!-- <label for = "stock_input">Please provide stock symbols separated by a comma:</label>
+      <input type = "text" id = "stock_input" required minlength = '1' size = '18'>
+      <input type = "button" id = "enter_button" value = "Enter"> -->
     </div>
     <div id = "chart"></div>
   </div>
@@ -70,9 +80,6 @@
         return entry.Sector === sectorName;
       });
       if (!matched_stocks.length) alert('Could not fetch that sector.');
-      else {
-        console.log(matched_stocks)
-      }
       return matched_stocks;
     }
 
@@ -112,7 +119,21 @@
         document.getElementById("selected").innerHTML += "<div class=\"symbol\">"+ String(sym) +"</div>";
         selected_stocks.push(sym);
         count++;
+        if (count == 1) {
+          document.getElementById("submit-stocks").innerHTML = sym;
+        } else {
+          document.getElementById("submit-stocks").innerHTML += "," + sym;
+        }
       }
+    }
+    function clearSymbols() {
+      count = 0;
+      selected_stocks = [];
+      tablinks = document.getElementsByClassName("add-button");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById("selected").innerHTML = "";
     }
 
     // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp
@@ -157,6 +178,7 @@
           tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
         document.getElementById(catName).style.display = "block";
+        document.getElementById('stocks-container').style.display = "flex";
         evt.currentTarget.className += " active";
         document.getElementById("chat_message").innerHTML = "You're almost there! Select a stock that seems interesting to take a look at the trends."
         currCategory = catName;
