@@ -62,14 +62,14 @@ body {
     padding: 1%;
     border: 1px solid rgb(155, 155, 155);
     border-radius: 15px 15px 0px 0px;
+    border-bottom: none;
 }
 .tabs {
     display: flex;
     margin-top: 0;
     justify-content: space-around;
-    border: 1px solid rgb(155, 155, 155);
     background-color: lightblue;
-    border-radius: 15px 15px 0px 0px;
+    border-radius: 20px 20px 20px 20px;
     width: 90vw;
 }
 /* Style buttons in tab bar */
@@ -80,7 +80,6 @@ body {
     outline: none;
     cursor: pointer;
     width: 30vw;
-    border-radius: 15px 15px 0px 0px;
     padding: 14px 16px;
     transition: 0.3s;
 }
@@ -90,14 +89,18 @@ body {
 .tabs button.active {
     background-color: #ccc;
 }
+#tablink-tech {
+    border-radius: 20px 0px 0px 20px;
+}
+#tablink-tran {
+    border-radius: 0px 20px 20px 0px;
+}
 
 .sector-content {
     display: none;
     flex-direction: column;
     align-items: center;
     padding: 12px;
-    border: 1px solid #ccc;
-    border-top: none;
     animation: fadeEffect 1s;
 }
 /* Go from zero to full opacity */
@@ -115,9 +118,9 @@ body {
 .category-select {
     display: flex;
     margin-top: 0;
-    border: 1px solid rgb(155, 155, 155);
+    /* border: 1px solid rgb(155, 155, 155); */
     background-color: lightblue;
-    border-radius: 15px 15px 15px 15px;
+    border-radius: 15px 15px 0px 0px;
     width: 60vw;
 }
 .category-select button {
@@ -138,20 +141,73 @@ body {
 }
 #catbutton-win {
     /* background-color: rgb(103, 213, 103); */
-    border-radius: 15px 0px 0px 15px;
+    border-radius: 15px 0px 0px 0px;
 }
 #catbutton-act {
     /* background-color: rgb(177, 176, 176); */
 }
 #catbutton-lose {
     /* background-color: rgb(237, 114, 114); */
-    border-radius: 0px 15px 15px 0px;
+    border-radius: 0px 15px 0px 0px;
 }
+
+.stocks {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.stock {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    width: 100%;
+    border-bottom: thin solid rgb(186, 186, 186);
+    /* border-top: none; */
+  }
 
 .cat-content {
     display: none;
-    padding: 12px 12px;
+    /* padding: 12px 12px; */
     animation: fadeEffect 3s;
+    height: 150px;
+    border: 1px solid rgb(155, 155, 155);
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.add-button {
+    margin-right: 30px;
+    background-color: lightblue;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 50px;
+    cursor: pointer;
+	/* padding: 5px; */
+}
+.add-button:hover {
+    background-color: #ddd;
+}
+.add-button.active {
+    background-color: #ccc;
+}
+
+.selected-symbols {
+    margin-top: 3%;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    margin-left: 20%;
+    margin-right: 20%;
+    flex-direction: row;
+    width: 60%;
+    height: 50px;
+    border: 1px solid rgb(155, 155, 155);
+}
+.symbol {
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 15px;
 }
 
 .min {

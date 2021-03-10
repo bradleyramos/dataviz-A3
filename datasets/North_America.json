@@ -1,4 +1,4 @@
-data = '[
+[
  {
    "Symbol": "A",
    "Name": "Agilent Technologies Inc. Common Stock",
@@ -75555,4 +75555,4 @@ data = '[
    "Sector": "Health Care",
    "Industry": "Biotechnology: Electromedical & Electrotherapeutic Apparatus"
  }
-]'
+]

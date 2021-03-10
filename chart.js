@@ -3,6 +3,7 @@ let unirest = require("unirest");
 
 // Function to call API
 async function queryData() {
+    console.log('stock_input: ', document.getElementById("stock_input").value);
     let req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
     req.query({
         "interval": "1d",
@@ -11,7 +12,7 @@ async function queryData() {
         "region": "US"
     });
     req.headers({
-        "x-rapidapi-key": "946a51fb3dmsh92e675ab06eff2ep106edbjsn9831853f239f",
+        "x-rapidapi-key": "68b075bfbcmsh43a16a4405f3683p162f24jsn44054627f8af",
         "x-rapidapi-host": "apidojo-yahoo-finance-v1.p.rapidapi.com",
         "useQueryString": true
     });
