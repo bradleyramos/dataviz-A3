@@ -66,7 +66,7 @@
   <script>
     // Fetch some huge static data
     function getStaticData(resolve, reject) {
-      fetch("/datasets/North_America.json")
+      fetch("/datasets/NYSE.json")
       .then(response => response.json())
       .then(json => resolve(json));
     }
@@ -134,6 +134,7 @@
         tablinks[i].className = tablinks[i].className.replace(" active", "");
       }
       document.getElementById("selected").innerHTML = "";
+      document.getElementById("submit-stocks").innerHTML = "";
     }
 
     // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp

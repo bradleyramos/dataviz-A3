@@ -6,6 +6,7 @@ document.getElementById("enter_button").onclick = driver;
 
 async function driver() {
     let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
+    console.log('symbols: ', symbols);
     let data = [];
     for (let i = 0; i < symbols.length; i++) {
         let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
