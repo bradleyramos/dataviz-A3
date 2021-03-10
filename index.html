@@ -3,17 +3,194 @@
 <meta name = "viewport" content = "width=device-width, initial-scale=1">
 <link rel = "stylesheet" href = "./styles.css" type = "text/css" media = "screen" charset = "utf-8">
 <script src="https://d3js.org/d3.v6.min.js"></script>
+<script src="https://d3js.org/d3-voronoi.v1.min.js"></script>
 </head>
 
 <body>
   <div class = "flex-container">
-    <div class = "flex-item">
-      <label for = "stock_input">Please provide stock symbol:</label>
-
-      <input type = "text" id = "stock_input" required minlength = '1' maxlength = '4' size = '6'>
-      <input type = "button" id = "enter_button" value = "Enter">
+    <div class = "chatbot">
+      <img src="images/bot_icon.png" alt="ChatBot"/>
+      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite sector to get started.</div>
     </div>
+    <div class = "sectors">
+      <!-- <div class = "sect-title">Choose a Sector:</div> -->
+      <div class = "tabs">
+        <button class="tablink" id="tablink-tech" onclick="selectSector(event, 'Technology')">Technology</button>
+        <button class="tablink" id="tablink-fin" onclick="selectSector(event, 'Finance')">Finance</button>
+        <button class="tablink" id="tablink-tran" onclick="selectSector(event, 'Transportation')">Transportation</button>
+      </div>
+      <div id = "sector-selected" class = "sector-content">
+      
+        <div id = "categories">
+          <!-- <div class = "sect-title">Choose a Category:</div> -->
+          <div class = "category-select">
+            <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
+            <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">No Change</button>
+            <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
+          </div>
+          <div id = "stocks-container">
+            <div class = "stocks-list">
+              <div class = "sect-title">Filtered Stocks:</div>
+              <div id = "Winning" class = "cat-content">
+                  <ul class="stocks" id="WinningList">
+                  </ul>
+                </div>
+                <div id = "Active" class = "cat-content">
+                  <ul class="stocks" id="ActiveList">
+                  </ul>
+                </div>
+                <div id = "Losing" class = "cat-content">
+                  <ul class="stocks" id="LosingList">
+                  </ul>
+                </div>
+            </div>
+            <div class = "selected-container">
+              <div class = "selected-title">Selected:</div>
+              <div id = "selected" class = "selected-symbols"></div>
+              <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
+              <input type = "button" id = "enter_button" value = "Submit Stock[s]">
+              <div id="submit-stocks"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class = "flex-item">
+      <!-- <label for = "stock_input">Please provide stock symbols separated by a comma:</label>
+      <input type = "text" id = "stock_input" required minlength = '1' size = '18'>
+      <input type = "button" id = "enter_button" value = "Enter"> -->
+    </div>
+    <div id = "chart"></div>
   </div>
-  <div id = "chart"></div>
   <script src = "./bundle.js"></script>
+  <script>
+    // Fetch some huge static data
+    function getStaticData(resolve, reject) {
+      fetch("/datasets/NYSE.json")
+      .then(response => response.json())
+      .then(json => resolve(json));
+    }
+
+    var currSector = '';
+    var currCategory = '';
+    async function filterBySector(sectorName) {
+      let prom = new Promise((resolve, reject) => getStaticData(resolve, reject));
+      let staticData = await prom;
+      let matched_stocks = staticData.filter(function (entry) {
+        return entry.Sector === sectorName;
+      });
+      if (!matched_stocks.length) alert('Could not fetch that sector.');
+      return matched_stocks;
+    }
+
+    async function filterByCategory(cat, sector) {
+      let sectorData = await sector;
+      let matched;
+      switch(cat) {
+        case 'Winning':
+          matched = sectorData.filter(function (entry) {
+            return parseFloat(entry["% Change"]) >= 3;
+          });
+          break;
+        case 'Losing':
+          matched = sectorData.filter(function (entry) {
+            return parseFloat(entry["% Change"]) <= -3;
+          });
+          break;
+        default:
+          matched = sectorData.filter(function (entry) {
+            return (parseFloat(entry["% Change"]) == 0);
+          });
+      }
+      if (!matched.length) alert('Could not fetch that sector.');
+      else {
+        console.log(matched)
+      }
+      return matched;
+    }
+    
+    let count = 0;
+    let selected_stocks = [];
+    function pushSymbol(evt, sym) {
+      if (count == 4) {
+        alert('You can only add 4 stocks at a time!');
+      } else {
+        evt.currentTarget.className += " active";
+        document.getElementById("selected").innerHTML += "<div class=\"symbol\">"+ String(sym) +"</div>";
+        selected_stocks.push(sym);
+        count++;
+        if (count == 1) {
+          document.getElementById("submit-stocks").innerHTML = sym;
+        } else {
+          document.getElementById("submit-stocks").innerHTML += "," + sym;
+        }
+      }
+    }
+    function clearSymbols() {
+      count = 0;
+      selected_stocks = [];
+      tablinks = document.getElementsByClassName("add-button");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById("selected").innerHTML = "";
+      document.getElementById("submit-stocks").innerHTML = "";
+    }
+
+    // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp
+    async function selectSector(evt, sectorName) {
+        var i, tabcontent, tablinks;
+        // Get all elements with class="sector-content" and hide them
+        tabcontent = document.getElementById("sector-selected").style.display = "flex";
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablink");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        // document.getElementById("sector-selected").style.display = "block";
+        evt.currentTarget.className += " active";
+        // Show the next step
+        document.getElementById("categories").style.display = "flex";
+        // Update chat bot to indicate the next step.
+        document.getElementById("chat_message").innerHTML = "Great! Now decide if you want to know more about stocks that are going up (winning), undetermined (active), or going down (losing)."
+        // document.getElementById("catbutton-win").click();
+        currSector = sectorName;
+        if (currCategory) {
+          // populate stocks
+          let filteredData = await filterByCategory(currCategory, filterBySector(currSector));
+          let stock;
+          document.getElementById(currCategory+"List").innerHTML = "";
+          for (let x in filteredData) {
+            stock = filteredData[x];
+            document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(event, \'" + stock.Symbol + "\')\"></li>";
+          }
+        }
+      }
+
+      async function selectCat(evt, catName) { // same as above but for category
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("cat-content");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("catlink");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(catName).style.display = "block";
+        document.getElementById('stocks-container').style.display = "flex";
+        evt.currentTarget.className += " active";
+        document.getElementById("chat_message").innerHTML = "You're almost there! Select up to 4 stocks that seem interesting to take a look at their trends, or refine your search."
+        currCategory = catName;
+        // populate stocks
+        let filteredData = await filterByCategory(currCategory, filterBySector(currSector));
+        let stock;
+        document.getElementById(currCategory+"List").innerHTML = "";
+        for (let x in filteredData) {
+          stock = filteredData[x];
+          document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(event, \'" + stock.Symbol + "\')\"></li>";
+        }
+      }
+  </script>
 </body>

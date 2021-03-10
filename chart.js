@@ -1,27 +1,58 @@
 // Make our API Calls
 let unirest = require("unirest");
 
+// Execute code
+document.getElementById("enter_button").onclick = driver;
+
+async function driver() {
+    let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
+    console.log('symbols: ', symbols);
+    let data = [];
+    for (let i = 0; i < symbols.length; i++) {
+        let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
+        let stock_data = await promise;
+        data.push(stock_data);
+    }
+
+    createChart(symbols, data);
+}
+
 // Function to call API
-async function queryData() {
+function queryData(resolve, reject, symbol) {
+    // Access API
     let req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
-    req.query({
-        "interval": "1d",
-        "symbol": document.getElementById("stock_input").value,
-        "range": "1y",
-        "region": "US"
-    });
+
+    // Establish headers
     req.headers({
-        "x-rapidapi-key": "946a51fb3dmsh92e675ab06eff2ep106edbjsn9831853f239f",
+        "x-rapidapi-key": "68b075bfbcmsh43a16a4405f3683p162f24jsn44054627f8af",
         "x-rapidapi-host": "apidojo-yahoo-finance-v1.p.rapidapi.com",
         "useQueryString": true
     });
+
+    // Query Data
+    req.query({
+        "interval": "1d",
+        "symbol": symbol,
+        "range": "1y",
+        "region": "US"
+    });
+
+    // Upon getting a response...
     req.end(function (response) {
         if (response.error) {
-            throw new Error(response.error);
+            reject(response.error);
         }
         else {
+            document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
             data = loadData(response.body);
-            createChart(data);
+            if (data == null) {
+                document.getElementById("chart").innerHTML = "Invalid stock symbol";
+                reject(new Error("Invalid stock symbol"));
+            }
+            else {
+                document.getElementById("chart").innerHTML = '';
+                resolve(data);
+            }
         }
     });
 }
@@ -30,229 +61,300 @@ async function queryData() {
 function loadData(data) {
     let chart_results_data = data["chart"]["result"][0];
     let quote_data = chart_results_data["indicators"]["quote"][0];
-    return chart_results_data["timestamp"]
-        .map((time, index) => ({
-            date: new Date(time * 1000),
-            high: quote_data["high"][index],
-            low: quote_data["low"][index],
-            open: quote_data["open"][index],
-            close: quote_data["close"][index],
-            volume: quote_data["volume"][index]
-        }));
+    if (quote_data && Object.keys(quote_data).length == 0 && quote_data.constructor == Object) {
+        return null;
+    }
+    else {
+        return chart_results_data["timestamp"]
+            .map((time, index) => ({
+                date: new Date(time * 1000),
+                high: quote_data["high"][index],
+                low: quote_data["low"][index],
+                open: quote_data["open"][index],
+                close: quote_data["close"][index],
+                volume: quote_data["volume"][index]
+            }));
+    }
 }
 
 // Compute moving average
 function movingAverage(data, numberOfPricePoints) {
-    return data.map((row, index, total) => {
+    let dates = [];
+    let averages = new Array(data[0].length).fill(0);
+    for (let j = 0; j < data[0].length; j++) {
+        dates.push(data[0][j][0]);
+        for (let i = 0; i < data.length; i++) {
+            averages[j] += data[i][j][1]
+        }
+    }
+
+    return averages.map((row, index, total) => {
         let start = Math.max(0, index - numberOfPricePoints);
         let end = index;
         let subset = total.slice(start, end + 1);
-        let sum = subset.reduce((a, b) => a + b['close'], 0);
-        return { date: row['date'], average: sum / subset.length };
+        let sum = subset.reduce((a, b) => a + b, 0);
+        return [dates[index], sum / (subset.length * data.length)];
     });
 }
 
-// Initialize chart
-function createChart(data) {
-    data = data.filter(
-        row => row['high'] && row['low'] && row['close'] && row['open']
-    );
+// Create chart
+function createChart(symbols, data) {
+    /* Setup container */
+    const container_width = 850;
+    const container_height = 400
 
-    // create this_year_start_data
-    this_year_start_data = new Date(2018, 0, 1)
+    let svg = d3.select("body")
+        .append("svg")
+        .attr("width", container_width)
+        .attr("height", container_height);
 
-    // filter out data based on time period
-    data = data.filter(row => {
-        if (row['date']) {
-            return row['date'] >= this_year_start_data;
+    let margin = { top: 50, left: 50, bottom: 50, right: 100 };
+
+    let height = container_height - margin.top - margin.bottom;
+    let width = container_width - margin.right - margin.left;
+
+    let g = svg.append('g')
+        .attr("transform", `translate(${margin.left}, ${margin.top})`)
+        .attr("overflow", "hidden")
+        .attr("pointer-events", "all");
+
+    /* Extract important info from data */
+    let relevant_data = [];
+    for (let i = 0; i < data.length; i++) {
+        let stock = data[i];
+        let relevant_stock = [];
+        for (let j = 0; j < stock.length; j++) {
+            let row = stock[j];
+            relevant_stock.push([row["date"], row["close"]]);
         }
-    });
-
-    const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-    let width = window.innerWidth - (margin.left + margin.right);
-    let height = window.innerHeight / 2 - (margin.top + margin.bottom);
-
-    // Find data range
-    let xMin = d3.min(data, d => d["date"]);
-    let xMax = d3.max(data, d => d["date"]);
-
-    let yMin = d3.min(data, d => d["close"]);
-    let yMax = d3.max(data, d => d["close"]);
-
-    // Scales for the charts
-    let xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, width]);
-
-    let yScale = d3.scaleLinear()
-        .domain([yMin - 5, yMax])
-        .range([height, 0]);
-
-    // clear out old svg
-    d3.selectAll('#chart > *').remove();
-
-    // add chart SVG to the page
-    let svg = d3.select('#chart')
-        .append('svg')
-        .attr('width', width + margin['left'] + margin['right'])
-        .attr('height', height + margin['top'] + margin['bottom'])
-        .append('g')
-        .attr('transform', `translate(${margin['left']}, ${margin['top']})`);
-
-    // create the axes component
-    svg.append('g')
-        .attr('id', 'xAxis')
-        .attr('transform', `translate(0, ${height})`)
-        .call(d3.axisBottom(xScale));
-    svg.append('g')
-        .attr('id', 'yAxis')
-        .attr('transform', `translate(${width}, 0)`)
-        .call(d3.axisRight(yScale));
-
-    // generates close price line chart when called
-    let line = d3.line()
-        .x(d => xScale(d['date']))
-        .y(d => yScale(d['close']));
-
-    // generates moving average curve when called
-    let movingAverageLine = d3.line()
-        .x(d => xScale(d['date']))
-        .y(d => yScale(d['average']))
-        .curve(d3.curveBasis);
-
-    // Append the path and bind data
-    svg.append('path')
-        .data([data])
-        .style('fill', 'none')
-        .attr('id', 'priceChart')
-        .attr('stroke', 'blue')
-        .attr('stroke-width', '1.5')
-        .attr('d', line);
-
-    // calculates simple moving average over 50 days
-    let movingAverageData = movingAverage(data, 49);
-    svg.append('path')
-        .data([movingAverageData])
-        .style('fill', 'none')
-        .attr('id', 'movingAverageLine')
-        .attr('stroke', '#FF8900')
-        .attr('d', movingAverageLine);
-
-    // renders x and y crosshair
-    let focus = svg.append('g')
-        .attr('class', 'focus')
-        .style('display', 'none');
-
-    focus.append('circle').attr('r', 4.5);
-    focus.append('line').classed('x', true);
-    focus.append('line').classed('y', true);
-
-    svg.append('rect')
-        .attr('class', 'overlay')
-        .attr('width', width)
-        .attr('height', height)
-        .on('mouseover', () => focus.style('display', null))
-        .on('mouseout', () => focus.style('display', 'none'))
-        .on('mousemove', generateCrosshair);
-
-    d3.select('.overlay').style('fill', 'none');
-    d3.select('.overlay').style('pointer-events', 'all');
-
-    d3.selectAll('.focus line').style('fill', 'none');
-    d3.selectAll('.focus line').style('stroke', '#67809f');
-    d3.selectAll('.focus line').style('stroke-width', '1.5px');
-    d3.selectAll('.focus line').style('stroke-dasharray', '3 3');
-
-    //returs insertion point
-    let bisectDate = d3.bisector(d => d.date).left;
-
-    /* mouseover function to generate crosshair */
-    function generateCrosshair() {
-        // returns corresponding value from the domain
-        let correspondingDate = xScale.invert(d3.pointer(event, this)[0]);
-
-        // gets insertion point
-        let i = bisectDate(data, correspondingDate, 1);
-        let d0 = data[i - 1];
-        let d1 = data[i];
-        let currentPoint = correspondingDate - d0['date'] > d1['date'] - correspondingDate ? d1 : d0;
-        focus.attr('transform', `translate(${xScale(currentPoint['date'])}, ${yScale(currentPoint['close'])})`);
-
-        focus.select('line.x')
-            .attr('x1', 0)
-            .attr('x2', width - xScale(currentPoint['date']))
-            .attr('y1', 0)
-            .attr('y2', 0);
-
-        focus.select('line.y')
-            .attr('x1', 0)
-            .attr('x2', 0)
-            .attr('y1', 0)
-            .attr('y2', height - yScale(currentPoint['close']));
-
-        // updates the legend to display the date, open, close, high, low, and volume of the selected mouseover area
-        updateLegends(currentPoint);
+        relevant_data.push(relevant_stock);
     }
 
-    /* Legends */
-    function updateLegends(currentData) {
-        d3.selectAll('.lineLegend').remove();
+    let minX = d3.min(relevant_data, d => d3.min(d, e => e[0]));
+    let maxX = d3.max(relevant_data, d => d3.max(d, e => e[0]));
+    let minY = d3.min(relevant_data, d => d3.min(d, e => e[1]));
+    let maxY = d3.max(relevant_data, d => d3.max(d, e => e[1]));
 
-        let legendKeys = Object.keys(data[0]);
-        let lineLegend = svg.selectAll('.lineLegend')
-            .data(legendKeys)
-            .enter()
-            .append('g')
-            .attr('class', 'lineLegend')
-            .attr('transform', (d, i) => { return `translate(0, ${i * 20})`; });
-        lineLegend.append('text')
-            .text(d => {
-                str_d = String(d)
-                str_d = str_d.charAt(0).toUpperCase() + str_d.slice(1);
-                if (d === 'date') {
-                    return `${str_d}: ${currentData[d].toLocaleDateString()}`;
-                }
-                else if (d === 'high' || d === 'low' || d === 'open' || d === 'close') {
-                    return `${str_d}: ${currentData[d].toFixed(2)}`;
-                }
-                else {
-                    return `${str_d}: ${currentData[d]}`;
-                }
-            })
-            .style('fill', 'black')
-            .attr('transform', 'translate(15,9)'); //align texts with boxes
-    };
+    /* Create scales/axes/brush */
+    let xScale = d3.scaleTime()
+        .range([0, width])
+        .domain([minX, maxX]);
 
-    /* Volume series bars */
-    let volData = data.filter(d => d['volume'] !== null && d['volume'] !== 0);
+    let yScale = d3.scaleLinear()
+        .range([height, 2])
+        .domain([minY, maxY]);
 
-    let yMinVolume = d3.min(volData, d => { return Math.min(d['volume']); });
+    let line = d3.line()
+        .x(d => xScale(d[0]))
+        .y(d => yScale(d[1]));
 
-    let yMaxVolume = d3.max(volData, d => { return Math.max(d['volume']); });
+    let colors = d3.scaleOrdinal()
+        .domain([0, relevant_data.length])
+        .range(d3.schemeCategory10);
 
-    let yVolumeScale = d3
-        .scaleLinear()
-        .domain([yMinVolume, yMaxVolume])
-        .range([height, height * (3 / 4)]);
+    let xAxis = d3.axisBottom(xScale);
+    let yAxis = d3.axisLeft(yScale);
 
-    svg.selectAll()
-        .data(volData)
+    /* Create brush */
+    let brush = d3.brushX()
+        .extent([[0, 0], [width, height]])
+        .on("end", brushEnded);
+    let idleTimeout;
+    let idleDelay = 350;
+
+    svg.append('g')
+        .attr("class", "brush")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`)
+        .call(brush);
+
+    /* Plot axes */
+    g.append('g')
+        .attr("class", "axis--x")
+        .attr("transform", `translate(0, ${height})`)
+        .call(xAxis);
+
+    g.append('g')
+        .attr("class", "axis--y")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr('y', 0 - margin.left)
+        .attr('x', 0 - (height / 2))
+        .attr("dy", "1em")
+        .attr("text-anchor", "middle")
+        .attr("fill", "rgb(54, 54, 54)")
+        .attr("font-size", "1.2em")
+        .text("Closing Price (USD)");
+
+    g.append("defs")
+        .append("clipPath")
+        .attr("id", "clip")
+        .append("rect")
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr("width", width)
+        .attr("height", height);
+
+    /* Plot legend */
+    let legend = svg.selectAll(".lineLegend")
+        .data(symbols)
         .enter()
-        .append('rect')
-        .attr('x', d => { return xScale(d['date']); })
-        .attr('y', d => { return yVolumeScale(d['volume']); })
-        .attr('class', 'vol')
-        .attr('fill', (d, i) => {
-            if (i === 0) {
-                return '#03a678';
-            }
-            else {
-                return volData[i - 1].close > d.close ? 'green' : 'red'; // green bar if price is rising during that period, and red when price  is falling
-            }
-        })
-        .attr('width', 1)
-        .attr('height', d => { return height - yVolumeScale(d['volume']); });
-}
+        .append('g')
+        .attr("class", "lineLegend")
+        .attr("transform", (d, i) => `translate(${(width + margin.right * 0.75)}, ${(margin.top + i * 20)})`);
 
-// Execute code
-document.getElementById("enter_button").onclick = queryData;
+    legend.append("text")
+        .text(d => d)
+        .attr("transform", "translate(15, 9)");
+
+    legend.append("rect")
+        .attr("fill", (d, i) => colors(i))
+        .attr("width", 10)
+        .attr("height", 10);
+
+    /* Plot line and circles */
+    let main = g.append('g')
+        .attr("class", "main")
+        .attr("clip-path", "url(#clip)");
+
+    for (let i = 0; i < relevant_data.length; i++) {
+        main.append("path")
+            .datum(relevant_data[i])
+            .attr('d', line)
+            .attr("stroke", d => colors(i))
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("class", "line")
+            .attr("pointer-events", "none");
+
+        main.selectAll(".circle")
+            .data(relevant_data[i])
+            .enter()
+            .append("circle")
+                .attr("cx", d => xScale(d[0]))
+                .attr("cy", d => yScale(d[1]))
+                .attr('r', 2)
+                .attr("fill", "white")
+                .attr("stroke", d => colors(i))
+                .attr("stroke-width", 1)
+                .attr("class", "circles");
+    }
+
+    /* Plot moving average */
+    main.append("path")
+        .datum(movingAverage(relevant_data, 49))
+        .attr('d', line)
+        .attr("stroke", "orange")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("stroke-width", 2)
+        .attr("fill", "none")
+        .attr("class", "line");
+
+    /* Voronoi diagram */
+    let vorData = d3.merge(relevant_data);
+
+    let voronoi_diagram = d3.voronoi()
+        .x(d => xScale(d[0]))
+        .y(d => yScale(d[1]))
+        .size([container_width, container_height])(vorData);
+
+    let voronoi_radius = width;
+
+    /* Focus & Overlay */
+    let focus = g.append('g')
+        .style("display", "none");
+
+    focus.append("line")
+        .attr("id", "focusLineX")
+        .attr("class", "focusLine");
+    focus.append("line")
+        .attr("id", "focusLineY")
+        .attr("class", "focusLine");
+    focus.append("circle")
+        .attr("id", "focusCircle")
+        .attr('r', 2)
+        .attr("class", "circle focusCirle");
+
+    let tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .attr("id", "tooltip")
+        .style("opacity", 0);
+    
+    g.on("mouseout", () => {
+        tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+             });
+
+    svg.select(".overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", () => { focus.style("display", null); })
+        .on("mouseout", () => { 
+            focus.style("display", "none")})
+        .on("mousemove", function (event) {
+            let [mx, my] = d3.pointer(event, this);
+
+            let site = voronoi_diagram.find(mx, my, voronoi_radius);
+
+            let x = site[0];
+            let y = site[1];
+
+            focus.select("#focusCircle")
+                .attr("cx", x)
+                .attr("cy", y);
+            focus.select("#focusLineX")
+                .attr("x1", x).attr("y1", yScale(yScale.domain()[0]))
+                .attr("x2", x).attr("y2", yScale(yScale.domain()[1]));
+            focus.select("#focusLineY")
+                .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
+                .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
+                
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+            tooltip.html(`${d3.timeFormat("%x")(xScale.invert(x))}<br/>$${yScale.invert(y).toFixed(2)}`)
+                .style("left", (margin.left + 15 + x) + "px")
+                .style("top", (margin.top + -10 + y) + "px");
+        })
+        .on("dblclick", () => {
+            xScale.domain([minX, maxX]);
+            zoom();
+        });
+
+    /* Brushing for zooming */
+    function brushEnded(event) {
+        let selection = event.selection;
+        if (selection === null) {
+            if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+            xScale.domain([minX, maxX]);
+        }
+        else {
+            xScale.domain([xScale.invert(selection[0]), xScale.invert(selection[1])]);
+            svg.select(".brush").call(brush.move, null);
+        }
+        zoom();
+    }
+
+    function idled() {
+        idleTimeout = null;
+    }
+
+    function zoom() {
+        let t = svg.transition().duration(750);
+
+        svg.select(".axis--x").transition(t).call(xAxis);
+        g.select(".axis--y").transition(t).call(yAxis);
+        g.selectAll(".circles").transition(t)
+            .attr("cx", d => xScale(d[0]))
+            .attr("cy", d => yScale(d[1]));
+        g.selectAll(".line").transition(t)
+            .attr("d", d => line(d));
+
+        voronoi_diagram = d3.voronoi()
+            .x(d => xScale(d[0]))
+            .y(d => yScale(d[1]))
+            .size([container_width, container_height])(vorData);
+    }
+}

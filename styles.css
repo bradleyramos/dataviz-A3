@@ -1,36 +1,289 @@
 body {
     background:white;
+    font-family: Helvetica, sans-serif;
 }
 
-#chart {
-    background: lightgrey;
-    color: black;
-    width: 100%;
-    height: 100%;
+.axis path,
+.axis line {
+fill: none;
+stroke: #000;
+shape-rendering: crispEdges;
+}
+
+.y.axis path {
+display: none;
 }
 
 .flex-container {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
-  
-    flex-flow: row nowrap;
-    justify-content: flex-start;
+    flex-flow: column wrap;
+    justify-items: center;
     align-items: center;
 }
 
-.flex-item {
-    color: black;
-    text-align: left;
-    padding: 1em;
+.chatbot {
+    display: flex;
+    width: 100%;
+    height: 100px;
+    justify-self: flex-start;
+}
+
+.message {
+    display: flex;
+    margin-top: 20px;
+    margin-left: 20px;
+    align-items: center;
+    padding: 1%;
+    padding-left: 2%;
+    padding-right: 2%;
+    height: 30%;
+    background-color: lightblue;
+    border-radius: 10px;
+    box-shadow: 1px 1px 1px 1px rgb(0, 34, 45);
+}
+/* Add arrow to the message box (pointing left) */
+.message::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    width: 0;
+    left: 120px;
+    z-index: 1;
+    border: medium solid lightblue;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent lightblue transparent transparent;
+}
+.sectors {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+}
+.sect-title {
+    text-align: center;
+    width: 50%;
+    margin-left: 25%;
+    margin-top: 25px;
+    padding: 1%;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 15px 15px 0px 0px;
+    border-bottom: none;
+}
+.tabs {
+    display: flex;
+    margin-top: 3%;
+    justify-content: space-around;
+    background-color: lightblue;
+    border-radius: 20px 20px 20px 20px;
+    width: 90vw;
+}
+/* Style buttons in tab bar */
+.tabs button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    width: 30vw;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+.tabs button:hover {
+    background-color: #ddd;
+}
+.tabs button.active {
+    background-color: #ccc;
+}
+#tablink-tech {
+    border-radius: 20px 0px 0px 20px;
+}
+#tablink-tran {
+    border-radius: 0px 20px 20px 0px;
+}
+
+.sector-content {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    animation: fadeEffect 1s;
+}
+/* Go from zero to full opacity */
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+#categories {
+    display: none;
+    flex-direction: column;
+}
+
+/* Style category selection */
+.category-select {
+    display: flex;
+    margin-top: 1%;
+    /* border: 1px solid rgb(155, 155, 155); */
+    background-color: lightblue;
+    border-radius: 15px 15px 15px 15px;
+    width: 60vw;
+}
+.category-select button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    width: 20vw;
+    padding: 10px 16px;
+    transition: 0.3s;
+}
+.category-select button:hover {
+    background-color: #ddd;
+}
+.category-select button.active {
+    background-color: #ccc;
+}
+#catbutton-win {
+    /* background-color: rgb(103, 213, 103); */
+    border-radius: 15px 0px 0px 15px;
+}
+#catbutton-act {
+    /* background-color: rgb(177, 176, 176); */
+}
+#catbutton-lose {
+    /* background-color: rgb(237, 114, 114); */
+    border-radius: 0px 15px 15px 0px;
+}
+
+#stocks-container {
+    display: none;
+    flex-direction: row;
+    justify-items: space-around;
+    justify-content: center;
+}
+
+.stocks {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 30vw;
+}
+.stock {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    width: 100%;
+    border-bottom: thin solid rgb(186, 186, 186);
+    /* border-top: none; */
+  }
+
+.cat-content {
+    display: none;
+    /* padding: 12px 12px; */
+    animation: fadeEffect 3s;
+    height: 150px;
+    border: 1px solid rgb(155, 155, 155);
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.add-button {
+    margin-right: 30px;
+    background-color: lightblue;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 50px;
+    cursor: pointer;
+	/* padding: 5px; */
+}
+.add-button:hover {
+    background-color: #ddd;
+}
+.add-button.active {
+    background-color: #ccc;
+}
+
+.selected-container {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+}
+.selected-container input {
+    margin-left: 45%;
+    margin-top: 15px;
+    width: 50%;
+}
+
+.selected-title {
+    text-align: center;
+    width: 60%;
+    margin-left: 40%;
+    margin-top: 25px;
+    padding: 1%;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 15px 15px 0px 0px;
+    border-bottom: none;
+}
+
+.selected-symbols {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    margin-left: 20%;
+    margin-right: 20%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 25vw;
+    min-height: 50px;
+    border: 1px solid rgb(155, 155, 155);
+}
+.symbol {
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid rgb(155, 155, 155);
+    border-radius: 15px;
+}
+
+#submit-stocks {
+    display: none;
+}
+
+.min {
+    float: right;
+}
+.overlay1 {
+    fill: none;
+    stroke: none;
+    pointer-events: all;
+}
+
+.focusLine {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 0.5px;
+}
+
+.chart-container {
+    width: 60%;
+    margin: 10%;
 }
 
 a {
     color: #67809f;
 }
+.focusCircle {
+    fill: red;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightgrey;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: all;
+  }
