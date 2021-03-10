@@ -43,7 +43,7 @@ function queryData(resolve, reject, symbol) {
             reject(response.error);
         }
         else {
-            document.getElementById("chat_message").innerHTML = "You did it! Make sure you select the time period you are interested in."
+            document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
             data = loadData(response.body);
             if (data == null) {
                 document.getElementById("chart").innerHTML = "Invalid stock symbol";

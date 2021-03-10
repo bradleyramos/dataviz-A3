@@ -10,7 +10,7 @@
   <div class = "flex-container">
     <div class = "chatbot">
       <img src="images/bot_icon.png" alt="ChatBot"/>
-      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite industry to get started.</div>
+      <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite sector to get started.</div>
     </div>
     <div class = "sectors">
       <!-- <div class = "sect-title">Choose a Sector:</div> -->
@@ -181,7 +181,7 @@
         document.getElementById(catName).style.display = "block";
         document.getElementById('stocks-container').style.display = "flex";
         evt.currentTarget.className += " active";
-        document.getElementById("chat_message").innerHTML = "You're almost there! Select a stock that seems interesting to take a look at the trends."
+        document.getElementById("chat_message").innerHTML = "You're almost there! Select up to 4 stocks that seem interesting to take a look at their trends, or refine your search."
         currCategory = catName;
         // populate stocks
         let filteredData = await filterByCategory(currCategory, filterBySector(currSector));
