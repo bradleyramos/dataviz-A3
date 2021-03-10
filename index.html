@@ -163,7 +163,7 @@
           document.getElementById(currCategory+"List").innerHTML = "";
           for (let x in filteredData) {
             stock = filteredData[x];
-            document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(" + stock.Symbol + ")\"></li>";
+            document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(event, \'" + stock.Symbol + "\')\"></li>";
           }
         }
       }
