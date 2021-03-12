@@ -7,15 +7,35 @@ document.getElementById("enter_button").onclick = driver;
 
 async function driver() {
     let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
-    console.log('symbols: ', symbols);
     let data = [];
     for (let i = 0; i < symbols.length; i++) {
-        let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
+        // call API data
+        // let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
+        // call static data (AQUA, BB, BOX) only works with those three
+        let promise = new Promise((resolve, reject) => queryStaticData(resolve, reject, symbols[i]));
         let stock_data = await promise;
         data.push(stock_data);
     }
-
     createChart(symbols, data);
+}
+
+// Function to fetch static data (save some API usage lol)
+function queryStaticData(resolve, reject, symbol) {
+    let data_route = '/datasets/' + symbol + '.json';
+    fetch(data_route)
+    .then(response => response.json())
+    .then(json => {
+        document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
+        if (json == null) {
+            document.getElementById("chart").innerHTML = "Invalid stock symbol";
+            reject(new Error("Invalid stock symbol"));
+        }
+        else {
+            document.getElementById("chart").innerHTML = '';
+            data = loadData(json);
+            resolve(data);
+        }
+    });
 }
 
 // Function to call API
@@ -44,6 +64,7 @@ function queryData(resolve, reject, symbol) {
             reject(response.error);
         }
         else {
+            console.log(response.body);
             document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
             data = loadData(response.body);
             if (data == null) {
@@ -101,7 +122,7 @@ function movingAverage(data, numberOfPricePoints) {
 // Create chart
 function createChart(symbols, data) {
     /* Setup container */
-    const container_width = 850;
+    const container_width = 750;
     const container_height = 400
 
     let old_svg = document.getElementById("svg_id");
@@ -110,7 +131,7 @@ function createChart(symbols, data) {
         document.getElementById("tooltip").remove();
     }
         
-    let svg = d3.select("body")
+    let svg = d3.select(document.getElementById("chart"))
         .append("svg")
         .attr("id", "svg_id")
         .attr("width", container_width)

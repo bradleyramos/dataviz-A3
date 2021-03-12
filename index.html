@@ -12,56 +12,57 @@
       <img src="images/bot_icon.png" alt="ChatBot"/>
       <div class = "message" id = "chat_message"> Welcome to our viz! Pick your favorite sector to get started.</div>
     </div>
-    <div class = "sectors">
-      <!-- <div class = "sect-title">Choose a Sector:</div> -->
-      <div class = "tabs">
-        <button class="tablink" id="tablink-tech" onclick="selectSector(event, 'Technology')">Technology</button>
-        <button class="tablink" id="tablink-fin" onclick="selectSector(event, 'Finance')">Finance</button>
-        <button class="tablink" id="tablink-tran" onclick="selectSector(event, 'Transportation')">Transportation</button>
-      </div>
-      <div id = "sector-selected" class = "sector-content">
-      
-        <div id = "categories">
-          <!-- <div class = "sect-title">Choose a Category:</div> -->
-          <div class = "category-select">
-            <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
-            <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Constant</button>
-            <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
+    <div class = "flex-grid">
+      <div class = "col-1"> 
+        <div class = "sectors">
+          <div class = "tabs">
+            <button class="tablink" id="tablink-tech" onclick="selectSector(event, 'Technology')">Technology</button>
+            <button class="tablink" id="tablink-fin" onclick="selectSector(event, 'Finance')">Finance</button>
+            <button class="tablink" id="tablink-tran" onclick="selectSector(event, 'Transportation')">Transportation</button>
           </div>
-          <div id = "stocks-container">
-            <div class = "stocks-list">
-              <div class = "sect-title">Filtered Stocks:</div>
-              <div id = "Winning" class = "cat-content">
-                  <ul class="stocks" id="WinningList">
-                  </ul>
+          <div id = "sector-selected" class = "sector-content">
+            <div id = "categories">
+              <div class = "category-select">
+                <button class="catlink" id="catbutton-win" onclick="selectCat(event, 'Winning')">Winning</button>
+                <button class="catlink" id="catbutton-act" onclick="selectCat(event, 'Active')">Constant</button>
+                <button class="catlink" id="catbutton-lose" onclick="selectCat(event, 'Losing')">Losing</button>
+              </div>
+              <div id = "stocks-container">
+                <div class = "stocks-list">
+                  <div class = "sect-title">Filtered Stocks:</div>
+                  <div id = "Winning" class = "cat-content">
+                    <ul class="stocks" id="WinningList">
+                    </ul>
+                  </div>
+                  <div id = "Active" class = "cat-content">
+                    <ul class="stocks" id="ActiveList">
+                    </ul>
+                  </div>
+                  <div id = "Losing" class = "cat-content">
+                    <ul class="stocks" id="LosingList">
+                    </ul>
+                  </div>
                 </div>
-                <div id = "Active" class = "cat-content">
-                  <ul class="stocks" id="ActiveList">
-                  </ul>
+                <div class = "selected-container">
+                  <div class = "selected-title">Selected:</div>
+                  <div id = "selected" class = "selected-symbols"></div>
+                  <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
+                  <input type = "button" id = "enter_button" value = "Submit Stock[s]">
+                  <div id="submit-stocks"></div>
                 </div>
-                <div id = "Losing" class = "cat-content">
-                  <ul class="stocks" id="LosingList">
-                  </ul>
-                </div>
-            </div>
-            <div class = "selected-container">
-              <div class = "selected-title">Selected:</div>
-              <div id = "selected" class = "selected-symbols"></div>
-              <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
-              <input type = "button" id = "enter_button" value = "Submit Stock[s]">
-              <div id="submit-stocks"></div>
+              </div>
             </div>
           </div>
+          <div id = "chart"></div>
         </div>
       </div>
+      <div class = "col-2">
+        column 2
+        
+      </div>
+      </div>
     </div>
-    <div class = "flex-item">
-      <!-- <label for = "stock_input">Please provide stock symbols separated by a comma:</label>
-      <input type = "text" id = "stock_input" required minlength = '1' size = '18'>
-      <input type = "button" id = "enter_button" value = "Enter"> -->
-    </div>
-    <div id = "chart"></div>
-  </div>
+    
   <script src = "./bundle.js"></script>
   <script>
     // Fetch some huge static data
@@ -103,9 +104,9 @@
           });
       }
       if (!matched.length) alert('Could not fetch that sector.');
-      else {
-        console.log(matched)
-      }
+      // else {
+      //   console.log(matched)
+      // }
       return matched;
     }
     
@@ -181,7 +182,7 @@
         document.getElementById(catName).style.display = "block";
         document.getElementById('stocks-container').style.display = "flex";
         evt.currentTarget.className += " active";
-        document.getElementById("chat_message").innerHTML = "You're almost there! Select up to 4 stocks that seem interesting to take a look at their trends, or refine your search."
+        document.getElementById("chat_message").innerHTML = "You're almost there! Here are the symbols and prices of stocks based on your filters. Select up to 4 stocks that seem interesting to take a look at their historic trends, or refine your search."
         currCategory = catName;
         // populate stocks
         let filteredData = await filterByCategory(currCategory, filterBySector(currSector));
@@ -189,7 +190,7 @@
         document.getElementById(currCategory+"List").innerHTML = "";
         for (let x in filteredData) {
           stock = filteredData[x];
-          document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(event, \'" + stock.Symbol + "\')\"></li>";
+          document.getElementById(currCategory+"List").innerHTML += "<li class=\"stock\">" + stock.Symbol + "<div>" + stock["Last Sale"] + "</div>" +"<input class=\"add-button\" type=\"button\" value=\"+\" onclick=\"pushSymbol(event, \'" + stock.Symbol + "\')\"></li>";
         }
       }
   </script>
