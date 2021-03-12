@@ -6,6 +6,7 @@ let unirest = require("unirest");
 document.getElementById("enter_button").onclick = driver;
 
 async function driver() {
+    document.getElementById("portfolio").style.display = "flex";
     let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
     let data = [];
     for (let i = 0; i < symbols.length; i++) {

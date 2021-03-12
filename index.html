@@ -47,7 +47,7 @@
                   <div class = "selected-title">Selected:</div>
                   <div id = "selected" class = "selected-symbols"></div>
                   <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
-                  <input type = "button" id = "enter_button" value = "Submit Stock[s]">
+                  <input type = "button" id = "enter_button" value = "View Chart">
                   <div id="submit-stocks"></div>
                 </div>
               </div>
@@ -57,7 +57,12 @@
         </div>
       </div>
       <div class = "col-2">
-        column 2
+          <div id = "portfolio" class = "portfolio-container">
+              <div class = "portfolio-title">My Portfolio:</div>
+              <div id = "selected-portfolio" class = "selected-portfolio"></div>
+              <input type = "button" id = "portfolio-button" value = "View Result">
+
+            </div>
         
       </div>
       </div>
@@ -118,6 +123,9 @@
       } else {
         evt.currentTarget.className += " active";
         document.getElementById("selected").innerHTML += "<div class=\"symbol\">"+ String(sym) +"</div>";
+        document.getElementById("selected-portfolio").innerHTML += "<label class=\"portfolio-symbol\" for=\"" + String(sym) + "\">Stake in " + String(sym) + ": $</label><input type=\"number\" id=\""+ String(sym) + "\" name=\""+String(sym)+"\"min=\"0\" max=\"10000\">"
+        
+        "<div class=\"portfolio-symbol\">"+ String(sym) +"</div>";
         selected_stocks.push(sym);
         count++;
         if (count == 1) {
@@ -136,6 +144,7 @@
       }
       document.getElementById("selected").innerHTML = "";
       document.getElementById("submit-stocks").innerHTML = "";
+      document.getElementById("selected-portfolio").innerHTML = "";
     }
 
     // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp
