@@ -31,7 +31,8 @@ function queryStaticData(resolve, reject, symbol) {
         }
         else {
             document.getElementById("chart").innerHTML = '';
-            resolve(json);
+            data = loadData(json);
+            resolve(data);
         }
     });
 }
@@ -62,6 +63,7 @@ function queryData(resolve, reject, symbol) {
             reject(response.error);
         }
         else {
+            console.log(response.body);
             document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
             data = loadData(response.body);
             if (data == null) {
@@ -119,7 +121,7 @@ function movingAverage(data, numberOfPricePoints) {
 // Create chart
 function createChart(symbols, data) {
     /* Setup container */
-    const container_width = 850;
+    const container_width = 750;
     const container_height = 400
 
     let old_svg = document.getElementById("svg_id");
@@ -128,7 +130,7 @@ function createChart(symbols, data) {
         document.getElementById("tooltip").remove();
     }
         
-    let svg = d3.select("body")
+    let svg = d3.select(document.getElementById("chart"))
         .append("svg")
         .attr("id", "svg_id")
         .attr("width", container_width)
