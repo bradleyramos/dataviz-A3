@@ -1,6 +1,7 @@
 body {
     background:white;
     font-family: Helvetica, sans-serif;
+    overflow-x: hidden;
 }
 .axis path,
 .axis line {
@@ -17,7 +18,7 @@ display: none;
     display: flex;
     flex-flow: column wrap;
     justify-items: center;
-    align-items: center;
+    align-items: left;
 }
 
 .flex-grid {
@@ -36,10 +37,8 @@ display: none;
 .col-2 {
     display: flex;
     justify-items: right;
-    z-index: -1;
-    /* margin-left: 20%; */
+    flex-direction: column;
     width: 35vw;
-    /* background-color: blue; */
 }
 
 .chatbot {
@@ -189,7 +188,7 @@ display: none;
     list-style-type: none;
     margin: 0;
     padding: 0;
-    width: 30vw;
+    width: 20vw;
 }
 .stock {
     display: flex;
@@ -256,7 +255,7 @@ display: none;
     margin-right: 20%;
     flex-direction: row;
     flex-wrap: wrap;
-    width: 25vw;
+    width: 20vw;
     min-height: 50px;
     border: 1px solid rgb(155, 155, 155);
 }
@@ -344,8 +343,7 @@ div.tooltip {
 .portfolio-title {
     text-align: center;
     width: 60%;
-    margin-left: 40%;
-    margin-top: 10%;
+    margin-left: 30%;
     padding: 1%;
     border: 1px solid rgb(155, 155, 155);
     border-radius: 15px 15px 0px 0px;
@@ -353,7 +351,7 @@ div.tooltip {
 }
 
 #portfolio-button {
-    margin-left: 45%;
+    margin-left: 35%;
     margin-top: 15px;
     width: 50%;
 }

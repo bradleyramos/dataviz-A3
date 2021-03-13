@@ -6,7 +6,6 @@ let unirest = require("unirest");
 document.getElementById("enter_button").onclick = driver;
 
 async function driver() {
-    document.getElementById("portfolio").style.display = "flex";
     let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
     let data = [];
     for (let i = 0; i < symbols.length; i++) {
@@ -138,7 +137,7 @@ function createChart(symbols, data) {
         .attr("width", container_width)
         .attr("height", container_height);
 
-    let margin = { top: 50, left: 50, bottom: 50, right: 100 };
+    let margin = { top: 25, left: 50, bottom: 50, right: 100 };
 
     let height = container_height - margin.top - margin.bottom;
     let width = container_width - margin.right - margin.left;
@@ -355,6 +354,8 @@ function createChart(symbols, data) {
 
     /* Brushing for zooming */
     function brushEnded(event) {
+        document.getElementById("chat_message").innerHTML = "Now that you know what your stock[s] look like, start your portfolio by putting some money into it and seeing what would happen to it in a given time period! (We capped the input at $10,000 since you're new.)"
+        document.getElementById("portfolio").style.display = "flex";
         let selection = event.selection;
         if (selection === null) {
             if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
