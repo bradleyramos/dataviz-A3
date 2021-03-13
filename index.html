@@ -47,7 +47,7 @@
                   <div class = "selected-title">Selected:</div>
                   <div id = "selected" class = "selected-symbols"></div>
                   <input type = "button" id = "clear_button" value = "Clear Selected" onclick="clearSymbols()">
-                  <input type = "button" id = "enter_button" value = "Submit Stock[s]">
+                  <input type = "button" id = "enter_button" value = "View Chart">
                   <div id="submit-stocks"></div>
                 </div>
               </div>
@@ -57,7 +57,16 @@
         </div>
       </div>
       <div class = "col-2">
-        column 2
+          <div id = "portfolio" class = "portfolio-container">
+            <div class = "portfolio-title">My Portfolio:</div>
+            <div id = "selected-portfolio" class = "selected-portfolio"></div>
+            <input type = "button" id = "portfolio-button" value = "View Results" onclick="analyzeStocks()">
+          </div>
+          <div id = "results" class = "portfolio-container">
+            <div class = "portfolio-title">Results:</div>
+            <div id = "results-content" class = "selected-portfolio"></div>
+            <div id = "chart-2"></div>
+          </div>
         
       </div>
       </div>
@@ -113,17 +122,22 @@
     let count = 0;
     let selected_stocks = [];
     function pushSymbol(evt, sym) {
-      if (count == 4) {
-        alert('You can only add 4 stocks at a time!');
+      if (selected_stocks.includes(sym)) {
+        alert('You already added this stock!')
       } else {
-        evt.currentTarget.className += " active";
-        document.getElementById("selected").innerHTML += "<div class=\"symbol\">"+ String(sym) +"</div>";
-        selected_stocks.push(sym);
-        count++;
-        if (count == 1) {
-          document.getElementById("submit-stocks").innerHTML = sym;
+        if (count == 4) {
+          alert('You can only add 4 stocks at a time!');
         } else {
-          document.getElementById("submit-stocks").innerHTML += "," + sym;
+          evt.currentTarget.className += " active";
+          document.getElementById("selected").innerHTML += "<div class=\"symbol\">"+ String(sym) +"</div>";
+          document.getElementById("selected-portfolio").innerHTML += "<label class=\"portfolio-symbol\" for=\"" + String(sym) + "\">Stake in " + String(sym) + ": $</label><input type=\"number\" id=\""+ String(sym) + "\" name=\""+String(sym)+"\"min=\"0\" max=\"10000\">"
+          selected_stocks.push(sym);
+          count++;
+          if (count == 1) {
+            document.getElementById("submit-stocks").innerHTML = sym;
+          } else {
+            document.getElementById("submit-stocks").innerHTML += "," + sym;
+          }
         }
       }
     }
@@ -136,6 +150,19 @@
       }
       document.getElementById("selected").innerHTML = "";
       document.getElementById("submit-stocks").innerHTML = "";
+      document.getElementById("selected-portfolio").innerHTML = "";
+    }
+
+    // Perform analysis of portfolio:
+    function analyzeStocks() {
+      let stock_stakes = {};
+      document.getElementById("results").style.display = "flex";
+      for (let s in selected_stocks) {
+        stock_stakes[selected_stocks[s]] = document.getElementById(selected_stocks[s]).value
+      }
+      console.log('stakes in each stock:', stock_stakes);
+      document.getElementById("results-content").innerHTML = JSON.stringify(stock_stakes);
+      document.getElementById("chat_message").innerHTML = "Here are your results! [Here's what to know about the bar chart.]"
     }
 
     // Update filter tabs, based on code from https://www.w3schools.com/howto/howto_js_tabs.asp
