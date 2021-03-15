@@ -11,13 +11,14 @@ async function driver() {
         // call API data
         // let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
         // call static data (AQUA, BB, BOX) only works with those three
-        let promise = new Promise((resolve, reject) => queryStaticData(resolve, reject, symbols[i]));
+        let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
         let stock_data = await promise;
         data.push(stock_data);
     }
     createChart(symbols, data);
 }
 
+/*
 // Function to fetch static data (save some API usage lol)
 function queryStaticData(resolve, reject, symbol) {
     let data_route = '/datasets/' + symbol + '.json';
@@ -27,15 +28,16 @@ function queryStaticData(resolve, reject, symbol) {
         document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
         if (json == null) {
             document.getElementById("chart").innerHTML = "Invalid stock symbol";
-            reject(new Error("Invalid stock symbol"));
+            reject(new Error("Stock symbol cannot be blank"));
         }
         else {
             document.getElementById("chart").innerHTML = '';
-            data = loadData(json);
+            data = loadData(json, symbol);
             resolve(data);
         }
     });
 }
+*/
 
 // Function to call API
 function queryData(resolve, reject, symbol) {
@@ -65,7 +67,7 @@ function queryData(resolve, reject, symbol) {
         else {
             console.log(response.body);
             document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
-            data = loadData(response.body);
+            data = loadData(response.body, symbol);
             if (data == null) {
                 document.getElementById("chart").innerHTML = "Invalid stock symbol";
                 reject(new Error("Invalid stock symbol"));
@@ -79,14 +81,14 @@ function queryData(resolve, reject, symbol) {
 }
 
 // Load data from API
-function loadData(data) {
+function loadData(data, symbol) {
     let chart_results_data = data["chart"]["result"][0];
     let quote_data = chart_results_data["indicators"]["quote"][0];
     if (quote_data && Object.keys(quote_data).length == 0 && quote_data.constructor == Object) {
         return null;
     }
     else {
-        return chart_results_data["timestamp"]
+        let processed_data = chart_results_data["timestamp"]
             .map((time, index) => ({
                 date: new Date(time * 1000),
                 high: quote_data["high"][index],
@@ -95,6 +97,7 @@ function loadData(data) {
                 close: quote_data["close"][index],
                 volume: quote_data["volume"][index]
             }));
+        return processed_data;
     }
 }
 
@@ -121,14 +124,8 @@ function movingAverage(data, numberOfPricePoints) {
 // Create chart
 function createChart(symbols, data) {
     /* Setup container */
-    const container_width = 750;
-    const container_height = 400
-
-    let old_svg = document.getElementById("svg_id");
-    if (old_svg) {
-        old_svg.remove();
-        document.getElementById("tooltip").remove();
-    }
+    const container_width = 850;
+    const container_height = 425
         
     let svg = d3.select(document.getElementById("chart"))
         .append("svg")
@@ -155,8 +152,10 @@ function createChart(symbols, data) {
             let row = stock[j];
             relevant_stock.push([row["date"], row["close"]]);
         }
+        window.sessionStorage.setItem(`${symbols[i]}_close`, relevant_stock.map(x => x[1]));
         relevant_data.push(relevant_stock);
     }
+    window.sessionStorage.setItem(`dates`, data[0].map(x => x["date"]));
 
     let minX = d3.min(relevant_data, d => d3.min(d, e => e[0]));
     let maxX = d3.max(relevant_data, d => d3.max(d, e => e[0]));
@@ -288,7 +287,7 @@ function createChart(symbols, data) {
 
     let voronoi_radius = width;
 
-    /* Focus & Overlay */
+    /* Focus, Tooltip, & Overlay */
     let focus = g.append('g')
         .style("display", "none");
 
@@ -303,24 +302,35 @@ function createChart(symbols, data) {
         .attr('r', 2)
         .attr("class", "circle focusCirle");
 
-    let tooltip = d3.select("body")
-        .append("div")
-        .attr("class", "tooltip")
-        .attr("id", "tooltip")
-        .style("opacity", 0);
-    
-    g.on("mouseout", () => {
-        tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-             });
+    let tooltip = g.append('g')  
+        .style("display", "none");
+
+    tooltip.append("rect")
+        .attr("id", "tooltip_rect")
+        .attr("class", "tooltip_rect")
+        .attr("rx", 5);
+    tooltip.append("text")
+        .attr("id", "tooltip_text_date")
+        .attr("fill", "rgb(0, 0, 0)")
+        .attr("font-size", "0.75em")
+        .attr("text-anchor", "middle");
+    tooltip.append("text")
+        .attr("id", "tooltip_text_price")
+        .attr("fill", "rgb(0, 0, 0)")
+        .attr("font-size", "0.75em")
+        .attr("text-anchor", "middle");
 
     svg.select(".overlay")
         .attr("width", width)
         .attr("height", height)
-        .on("mouseover", () => { focus.style("display", null); })
+        .on("mouseover", () => { 
+            focus.style("display", null);
+            tooltip.style("display", null);
+         })
         .on("mouseout", () => { 
-            focus.style("display", "none")})
+            focus.style("display", "none");
+            tooltip.style("display", "none");
+        })
         .on("mousemove", function (event) {
             let [mx, my] = d3.pointer(event, this);
 
@@ -339,12 +349,18 @@ function createChart(symbols, data) {
                 .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
                 .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
                 
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0.9);
-            tooltip.html(`${d3.timeFormat("%x")(xScale.invert(x))}<br/>$${yScale.invert(y).toFixed(2)}`)
-                //.style("left", (margin.left + x) + "px")
-                //.style("top", -(margin.top  + y) + "px");
+            tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
+            tooltip.select("#tooltip_text_date")
+                .text(`${d3.timeFormat("%x")(xScale.invert(x))}`)
+                .attr('x', 32.5)
+                .attr('y', 10.5);
+            tooltip.select("#tooltip_text_price")
+                .text(`$${yScale.invert(y).toFixed(2)}`)
+                .attr('x', 32.5)
+                .attr('y', 25);
+            tooltip.select("#tooltip_rect")
+                .attr('x', 0)
+                .attr('y', 0);
         })
         .on("dblclick", () => {
             xScale.domain([minX, maxX]);
@@ -353,6 +369,7 @@ function createChart(symbols, data) {
 
     /* Brushing for zooming */
     function brushEnded(event) {
+        document.getElementById("portfolio-button").display = "flex";
         document.getElementById("chat_message").innerHTML = "Now that you know what your stock[s] look like, start your portfolio by putting some money into it and seeing what would happen to it in a given time period! (We capped the input at $10,000 since you're new.)"
         document.getElementById("portfolio").style.display = "flex";
         let selection = event.selection;

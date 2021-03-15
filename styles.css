@@ -38,7 +38,7 @@ display: none;
     display: flex;
     justify-items: right;
     flex-direction: column;
-    width: 35vw;
+    width: 50vw;
 }
 
 .chatbot {
@@ -67,7 +67,7 @@ display: none;
     height: 0;
     position: absolute;
     width: 0;
-    left: 120px;
+    left: 110px;
     z-index: 1;
     border: medium solid lightblue;
     border-width: 10px 10px 10px 0;
@@ -75,6 +75,7 @@ display: none;
 }
 .sectors {
     display: flex;
+    width: 50vw;
     flex-direction: column;
     justify-items: center;
 }
@@ -84,17 +85,16 @@ display: none;
     margin-left: 25%;
     margin-top: 25px;
     padding: 1%;
-    border: 1px solid rgb(155, 155, 155);
+    border: 1px solid rgb(201, 201, 201);
     border-radius: 15px 15px 0px 0px;
     border-bottom: none;
 }
 .tabs {
     display: flex;
     margin-top: 3%;
-
     background-color: lightblue;
     border-radius: 20px 20px 20px 20px;
-    width: 60vw;
+    width: 50vw;
 }
 /* Style buttons in tab bar */
 .tabs button {
@@ -115,7 +115,7 @@ display: none;
     background-color: #ccc;
 }
 #tablink-tech {
-    border-radius: 0px 0px 0px 0px;
+    border-radius: 20px 20px 20px 20px;
 }
 #tablink-tran {
     border-radius: 0px 20px 20px 0px;
@@ -125,7 +125,10 @@ display: none;
     display: none;
     flex-direction: column;
     /* align-items: center; */
-    padding: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 45vw;
+    padding-top: 12px;
     animation: fadeEffect 1s;
 }
 /* Go from zero to full opacity */
@@ -143,8 +146,7 @@ display: none;
 /* Style category selection */
 .category-select {
     display: flex;
-    margin-top: 1%;
-    margin-left: 10%;
+    justify-items: center;
     background-color: lightblue;
     border-radius: 15px 15px 15px 15px;
     width: 45vw;
@@ -203,7 +205,6 @@ display: none;
 .cat-content {
     display: none;
     /* padding: 12px 12px; */
-    animation: fadeEffect 3s;
     height: 150px;
     border: 1px solid rgb(155, 155, 155);
     overflow-y: scroll;
@@ -231,7 +232,7 @@ display: none;
     justify-items: center;
 }
 .selected-container input {
-    margin-left: 45%;
+    margin-left: 32.5%;
     margin-top: 15px;
     width: 50%;
 }
@@ -239,7 +240,7 @@ display: none;
 .selected-title {
     text-align: center;
     width: 60%;
-    margin-left: 40%;
+    margin-left: 25%;
     margin-top: 25px;
     padding: 1%;
     border: 1px solid rgb(155, 155, 155);
@@ -251,8 +252,7 @@ display: none;
     display: flex;
     align-items: center;
     justify-items: center;
-    margin-left: 20%;
-    margin-right: 20%;
+    margin-left: 5%;
     flex-direction: row;
     flex-wrap: wrap;
     width: 20vw;
@@ -291,7 +291,16 @@ display: none;
 }
 
 #chart {
-    width: 50vw;
+    width: 47vw;
+    margin: auto;
+}
+
+#chart-2 {
+    position: absolute;
+    top: 427px;
+    left: 950px;
+    width: 850px;
+    margin: auto;
 }
 
 a {
@@ -301,34 +310,26 @@ a {
     fill: red;
 }
 
-div.tooltip {
-    position: relative;
-    text-align: center;
-    width: 60px;
+.tooltip_rect {
+    width: 65px;
     height: 28px;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: lightgrey;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: all;
+    fill: rgb(201, 201, 201);
+    pointer-events: none;
   }
-
 
 .portfolio-container {
     display: none;
     flex-direction: column;
-    margin-left: 5px;
 }
 .selected-portfolio {
     display: flex;
-    align-items: center;
-    justify-items: center;
-    margin-left: 10%;
-    margin-right: 20%;
-    flex-flow: row wrap;
-    width: 25vw;
-    min-height: 50px;
+    justify-items: left;
+    justify-content: space-between;
+    margin-left: auto;
+    margin-right: auto;
+    flex-flow: column;
+    width: 20vw;
+    min-height: 200px;
     padding: 10px;
     border: 1px solid rgb(155, 155, 155);
 }
@@ -343,7 +344,8 @@ div.tooltip {
 .portfolio-title {
     text-align: center;
     width: 60%;
-    margin-left: 20%;
+    margin-left: auto;
+    margin-right: auto;
     padding: 1%;
     border: 1px solid rgb(155, 155, 155);
     border-radius: 15px 15px 0px 0px;
@@ -351,8 +353,8 @@ div.tooltip {
 }
 
 #portfolio-button {
-    margin-left: 25%;
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 15px;
-    margin-bottom: 15px;
     width: 50%;
 }
