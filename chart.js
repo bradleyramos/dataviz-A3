@@ -21,7 +21,7 @@ async function driver() {
 /*
 // Function to fetch static data (save some API usage lol)
 function queryStaticData(resolve, reject, symbol) {
-    let data_route = '/datasets/' + symbol + '.json';
+    let data_route = '/static_datasets/' + symbol + '.json';
     fetch(data_route)
     .then(response => response.json())
     .then(json => {

@@ -82,7 +82,7 @@
   <script>
     // Fetch some huge static data
     function getStaticData(resolve, reject) {
-      fetch("/datasets/NYSE.json")
+      fetch("/static_datasets/NYSE.json")
         .then(response => response.json())
         .then(json => resolve(json));
     }
