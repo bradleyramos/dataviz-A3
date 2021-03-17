@@ -1,106 +1,3 @@
-// Make our API Calls
-let unirest = require("unirest");
-
-// Execute code
-document.getElementById("enter_button").onclick = driver;
-
-async function driver() {
-    let symbols = document.getElementById("submit-stocks").innerHTML.split(',');
-    let data = [];
-    for (let i = 0; i < symbols.length; i++) {
-        // call API data
-        // let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
-        // call static data (AQUA, BB, BOX) only works with those three
-        let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbols[i]));
-        let stock_data = await promise;
-        data.push(stock_data);
-    }
-    createChart(symbols, data);
-}
-
-/*
-// Function to fetch static data (save some API usage lol)
-function queryStaticData(resolve, reject, symbol) {
-    let data_route = '/static_datasets/' + symbol + '.json';
-    fetch(data_route)
-    .then(response => response.json())
-    .then(json => {
-        document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
-        if (json == null) {
-            document.getElementById("chart").innerHTML = "Invalid stock symbol";
-            reject(new Error("Stock symbol cannot be blank"));
-        }
-        else {
-            document.getElementById("chart").innerHTML = '';
-            data = loadData(json, symbol);
-            resolve(data);
-        }
-    });
-}
-*/
-
-// Function to call API
-function queryData(resolve, reject, symbol) {
-    // Access API
-    let req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
-
-    // Establish headers
-    req.headers({
-        "x-rapidapi-key": "68b075bfbcmsh43a16a4405f3683p162f24jsn44054627f8af",
-        "x-rapidapi-host": "apidojo-yahoo-finance-v1.p.rapidapi.com",
-        "useQueryString": true
-    });
-
-    // Query Data
-    req.query({
-        "interval": "1d",
-        "symbol": symbol,
-        "range": "1y",
-        "region": "US"
-    });
-
-    // Upon getting a response...
-    req.end(function (response) {
-        if (response.error) {
-            reject(response.error);
-        }
-        else {
-            console.log(response.body);
-            document.getElementById("chat_message").innerHTML = "This is your stock chart! \'Closing price \' tells you the price of a stock at the end of trading that day. Click and drag to select the time period you are interested in. Double click to reset zoom."
-            data = loadData(response.body, symbol);
-            if (data == null) {
-                document.getElementById("chart").innerHTML = "Invalid stock symbol";
-                reject(new Error("Invalid stock symbol"));
-            }
-            else {
-                document.getElementById("chart").innerHTML = '';
-                resolve(data);
-            }
-        }
-    });
-}
-
-// Load data from API
-function loadData(data, symbol) {
-    let chart_results_data = data["chart"]["result"][0];
-    let quote_data = chart_results_data["indicators"]["quote"][0];
-    if (quote_data && Object.keys(quote_data).length == 0 && quote_data.constructor == Object) {
-        return null;
-    }
-    else {
-        let processed_data = chart_results_data["timestamp"]
-            .map((time, index) => ({
-                date: new Date(time * 1000),
-                high: quote_data["high"][index],
-                low: quote_data["low"][index],
-                open: quote_data["open"][index],
-                close: quote_data["close"][index],
-                volume: quote_data["volume"][index]
-            }));
-        return processed_data;
-    }
-}
-
 // Compute moving average
 function movingAverage(data, numberOfPricePoints) {
     let dates = [];
@@ -122,16 +19,31 @@ function movingAverage(data, numberOfPricePoints) {
 }
 
 // Create chart
-function createChart(symbols, data) {
-    /* Setup container */
-    const container_width = 850;
-    const container_height = 425
-        
+function createChart(container_width, container_height) {
+    // Load state
+    let symbols = myState.selected_stocks;
+    let data = symbols.map(x => myState.stock_data[x]);
+
+    // Clear out previous chart
+    document.getElementById("chart").innerHTML = '';
+
+    // Return if no data
+    if (!symbols.length) {
+        return;
+    }
+
+    // Create chatbot message
+    document.getElementById("chat_message").innerHTML = "This is your stock chart!\
+    \"Closing price\" tells you the price of a stock at the end of trading that day.\
+    Click and drag to select the time period you are interested in. Double click to reset zoom.";
+
+    // Set up container
     let svg = d3.select(document.getElementById("chart"))
         .append("svg")
         .attr("id", "svg_id")
-        .attr("width", container_width)
-        .attr("height", container_height);
+        .attr("preserveAspectRation", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${container_width} ${container_height}`)
+        .attr("class", "svg-content-responsive");
 
     let margin = { top: 25, left: 50, bottom: 50, right: 100 };
 
@@ -152,10 +64,8 @@ function createChart(symbols, data) {
             let row = stock[j];
             relevant_stock.push([row["date"], row["close"]]);
         }
-        window.sessionStorage.setItem(`${symbols[i]}_close`, relevant_stock.map(x => x[1]));
         relevant_data.push(relevant_stock);
     }
-    window.sessionStorage.setItem(`dates`, data[0].map(x => x["date"]));
 
     let minX = d3.min(relevant_data, d => d3.min(d, e => e[0]));
     let maxX = d3.max(relevant_data, d => d3.max(d, e => e[0]));
@@ -258,13 +168,13 @@ function createChart(symbols, data) {
             .data(relevant_data[i])
             .enter()
             .append("circle")
-                .attr("cx", d => xScale(d[0]))
-                .attr("cy", d => yScale(d[1]))
-                .attr('r', 2)
-                .attr("fill", "white")
-                .attr("stroke", d => colors(i))
-                .attr("stroke-width", 1)
-                .attr("class", "circles");
+            .attr("cx", d => xScale(d[0]))
+            .attr("cy", d => yScale(d[1]))
+            .attr('r', 2)
+            .attr("fill", "white")
+            .attr("stroke", d => colors(i))
+            .attr("stroke-width", 1)
+            .attr("class", "circles");
     }
 
     /* Plot moving average */
@@ -302,7 +212,7 @@ function createChart(symbols, data) {
         .attr('r', 2)
         .attr("class", "circle focusCirle");
 
-    let tooltip = g.append('g')  
+    let tooltip = g.append('g')
         .style("display", "none");
 
     tooltip.append("rect")
@@ -323,11 +233,11 @@ function createChart(symbols, data) {
     svg.select(".overlay")
         .attr("width", width)
         .attr("height", height)
-        .on("mouseover", () => { 
+        .on("mouseover", () => {
             focus.style("display", null);
             tooltip.style("display", null);
-         })
-        .on("mouseout", () => { 
+        })
+        .on("mouseout", () => {
             focus.style("display", "none");
             tooltip.style("display", "none");
         })
@@ -335,32 +245,33 @@ function createChart(symbols, data) {
             let [mx, my] = d3.pointer(event, this);
 
             let site = voronoi_diagram.find(mx, my, voronoi_radius);
+            if (site) {
+                let x = site[0];
+                let y = site[1];
 
-            let x = site[0];
-            let y = site[1];
+                focus.select("#focusCircle")
+                    .attr("cx", x)
+                    .attr("cy", y);
+                focus.select("#focusLineX")
+                    .attr("x1", x).attr("y1", yScale(yScale.domain()[0]))
+                    .attr("x2", x).attr("y2", yScale(yScale.domain()[1]));
+                focus.select("#focusLineY")
+                    .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
+                    .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
 
-            focus.select("#focusCircle")
-                .attr("cx", x)
-                .attr("cy", y);
-            focus.select("#focusLineX")
-                .attr("x1", x).attr("y1", yScale(yScale.domain()[0]))
-                .attr("x2", x).attr("y2", yScale(yScale.domain()[1]));
-            focus.select("#focusLineY")
-                .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
-                .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
-                
-            tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
-            tooltip.select("#tooltip_text_date")
-                .text(`${d3.timeFormat("%x")(xScale.invert(x))}`)
-                .attr('x', 32.5)
-                .attr('y', 10.5);
-            tooltip.select("#tooltip_text_price")
-                .text(`$${yScale.invert(y).toFixed(2)}`)
-                .attr('x', 32.5)
-                .attr('y', 25);
-            tooltip.select("#tooltip_rect")
-                .attr('x', 0)
-                .attr('y', 0);
+                tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
+                tooltip.select("#tooltip_text_date")
+                    .text(`${d3.timeFormat("%x")(xScale.invert(x))}`)
+                    .attr('x', 32.5)
+                    .attr('y', 10.5);
+                tooltip.select("#tooltip_text_price")
+                    .text(`$${yScale.invert(y).toFixed(2)}`)
+                    .attr('x', 32.5)
+                    .attr('y', 25);
+                tooltip.select("#tooltip_rect")
+                    .attr('x', 0)
+                    .attr('y', 0);
+            }
         })
         .on("dblclick", () => {
             xScale.domain([minX, maxX]);
