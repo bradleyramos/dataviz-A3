@@ -19,12 +19,12 @@ python3 -m http.server
 
 
 ## Contributing
-If you would like to make your own changes, install browserify and watchify for automatic re-bundling:
+If you would like to make your own changes to how our webpage downloads data from the API, install browserify and watchify for automatic re-bundling:
 ```bash
 npm install -g browserify watchify
 ```
-Then, before you start making changes run the following code in a separate terminal:
+Then, before you start making changes, run the following code in a separate terminal:
 ```bash
-watchify chart.js -o bundle.js
+watchify modules/api_data.js -o bundle.js
 ```
-Once you have watchify and your http server running, changes made in chart.js will automatically re-bundle in bundle.js (which includes the package for API requests) and display on your browser.
+Once you have watchify and your http server running, changes made in api_data.js will automatically re-bundle in bundle.js (which includes the package for API requests) and display on your browser.
