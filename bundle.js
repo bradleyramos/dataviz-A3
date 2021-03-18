@@ -2,11 +2,11 @@
 // Make our API Calls
 let unirest = require("unirest");
 
-// Bind function to window
+// Bind driver function to window
 window.driver = driver;
 
 async function driver(symbol) {
-    // Get stock data
+    // Get stock data if not already stored
     if (!Object.keys(myState.stock_data).includes(symbol)) {
         // call API data
         let promise = new Promise((resolve, reject) => queryData(resolve, reject, symbol));
@@ -16,10 +16,10 @@ async function driver(symbol) {
 
         let stock_data = await promise;
 
-        // Store data in state
+        // Store data in myState global
         myState.stock_data[symbol] = stock_data;
 
-        // Get date data
+        // Store date data in myState if not already present
         if (!myState.length) {
             myState.dates = stock_data.map(x => x["date"]);
         }
@@ -39,7 +39,7 @@ function queryStaticData(resolve, reject, symbol) {
 }
 */
 
-// Function to call API
+// Function to get query API
 function queryData(resolve, reject, symbol) {
     // Access API
     let req = unirest("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-chart");
@@ -61,9 +61,11 @@ function queryData(resolve, reject, symbol) {
 
     // Upon getting a response...
     req.end(function (response) {
+        // If we get an error
         if (response.error) {
             reject(response.error);
         }
+        // If we successfully get data
         else {
             data = loadData(response.body);
             resolve(data);
@@ -73,23 +75,20 @@ function queryData(resolve, reject, symbol) {
 
 // Load data from API
 function loadData(data) {
+    // Access folder withing JSON
     let chart_results_data = data["chart"]["result"][0];
     let quote_data = chart_results_data["indicators"]["quote"][0];
-    if (quote_data && Object.keys(quote_data).length == 0 && quote_data.constructor == Object) {
-        return null;
-    }
-    else {
-        let processed_data = chart_results_data["timestamp"]
-            .map((time, index) => ({
-                date: new Date(time * 1000),
-                high: quote_data["high"][index],
-                low: quote_data["low"][index],
-                open: quote_data["open"][index],
-                close: quote_data["close"][index],
-                volume: quote_data["volume"][index]
-            }));
-        return processed_data;
-    }
+
+    // Create dataset
+    return chart_results_data["timestamp"]
+        .map((time, index) => ({
+            date: new Date(time * 1000),
+            high: quote_data["high"][index],
+            low: quote_data["low"][index],
+            open: quote_data["open"][index],
+            close: quote_data["close"][index],
+            volume: quote_data["volume"][index]
+        }));
 }
 },{"unirest":174}],2:[function(require,module,exports){
 'use strict';

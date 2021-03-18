@@ -1,4 +1,6 @@
+// Create the stake graph on the bottom right
 function createStakeGraph(container_width, container_height) {
+    /* Header */
     // Load state
     let symbols = myState.selected_stocks;
     let initial_stakes = myState.initial_stakes;
@@ -36,7 +38,6 @@ function createStakeGraph(container_width, container_height) {
         }
         relevant_data.push([dates[i], weighted_sum]);
     }
-
 
     let minX = d3.min(relevant_data, d => d[0]);
     let maxX = d3.max(relevant_data, d => d[0]);
@@ -134,6 +135,7 @@ function createStakeGraph(container_width, container_height) {
     let voronoi_radius = width;
 
     /* Focus, Tooltip, & Overlay */
+    // Create focus with circle and lines
     let focus = g.append('g')
         .style("display", "none");
 
@@ -148,6 +150,7 @@ function createStakeGraph(container_width, container_height) {
         .attr('r', 2)
         .attr("class", "circle focusCirle");
 
+    // Create tooltip
     let tooltip = g.append('g')
         .style("display", "none");
 
@@ -166,25 +169,31 @@ function createStakeGraph(container_width, container_height) {
         .attr("font-size", "0.75em")
         .attr("text-anchor", "middle");
 
+    // Produce an overlay on top of the svg
     svg.select(".overlay")
         .attr("width", width)
         .attr("height", height)
         .on("mouseover", () => {
+            // Don't do anything on mouseover
             focus.style("display", null);
             tooltip.style("display", null);
         })
         .on("mouseout", () => {
+            // Hide the focus and tooltip on mouseout
             focus.style("display", "none");
             tooltip.style("display", "none");
         })
         .on("mousemove", function (event) {
+            // Get current mouse coordinate
             let [mx, my] = d3.pointer(event, this);
 
+            // Find coordinates based on voronoi diagram
             let site = voronoi_diagram.find(mx, my, voronoi_radius);
             if (site) {
                 let x = site[0];
                 let y = site[1];
 
+                // Produce the focus circle and lines
                 focus.select("#focusCircle")
                     .attr("cx", x)
                     .attr("cy", y);
@@ -195,6 +204,7 @@ function createStakeGraph(container_width, container_height) {
                     .attr("x1", xScale(xScale.domain()[0])).attr("y1", y)
                     .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
 
+                // Produce the tooltip
                 tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
                 tooltip.select("#tooltip_text_date")
                     .text(`${d3.timeFormat("%x")(xScale.invert(x))}`)
@@ -210,11 +220,12 @@ function createStakeGraph(container_width, container_height) {
             }
         })
         .on("dblclick", () => {
+            // Reset on double click
             xScale.domain([minX, maxX]);
             zoom();
         });
 
-    /* Brushing for zooming */
+    // Upon the brush ending
     function brushEnded(event) {
         let selection = event.selection;
         if (selection === null) {
@@ -232,9 +243,11 @@ function createStakeGraph(container_width, container_height) {
         idleTimeout = null;
     }
 
+    // Zoom in on the sector defined by the brush
     function zoom() {
         let t = svg.transition().duration(750);
 
+        // Update axes, circles, and lines
         svg.select(".axis--x").transition(t).call(xAxis);
         g.select(".axis--y").transition(t).call(yAxis);
         g.selectAll(".circles").transition(t)
@@ -243,6 +256,7 @@ function createStakeGraph(container_width, container_height) {
         g.selectAll(".line").transition(t)
             .attr("d", d => line(d));
 
+        // Update voronoi diagram for focus
         voronoi_diagram = d3.voronoi()
             .x(d => xScale(d[0]))
             .y(d => yScale(d[1]))
