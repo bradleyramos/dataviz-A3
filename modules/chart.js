@@ -272,7 +272,12 @@ function createChart(container_width, container_height) {
                     .attr("x2", xScale(xScale.domain()[1])).attr("y2", y);
 
                 // Produce the tooltip
-                tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
+                if (x < 65) {
+                    tooltip.attr(`transform`, `translate(${(x + 10)}, ${(y + 10)})`);
+                }
+                else {
+                    tooltip.attr(`transform`, `translate(${(x - 75)}, ${(y + 10)})`);
+                }
                 tooltip.select("#tooltip_text_date")
                     .text(`${d3.timeFormat("%x")(xScale.invert(x))}`)
                     .attr('x', 32.5)

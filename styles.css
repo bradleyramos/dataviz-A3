@@ -1,43 +1,51 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     background: white;
     font-family: Helvetica, sans-serif;
-    overflow-x: hidden;
-    display: flex;
-    flex-flow: column wrap;
-    justify-items: center;
 }
 
-.axis path, .axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
+/* Set up grid */
+.grid {
+    display: grid;
+    grid-template-areas: 
+        "chatbot chatbot"
+        "mainLeft mainRight"
+        "graphLeft graphRight";
+    grid-gap: 10px;
+    box-sizing: border-box;
+    grid-template-rows: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.y.axis path {
-    display: none;
+.header {
+    grid-area: chatbot;
 }
 
-.flex-grid {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    width: 100vw;
+.main_left {
+    grid-area: mainLeft;
+    width: 100%;
 }
 
-.col-1 {
-    display: flex;
-    justify-items: center;
-    flex-direction: column;
-    width: 50vw;
+.main_right {
+    grid-area: mainRight;
+    width: 100%;
 }
 
-.col-2 {
-    display: flex;
-    justify-items: center;
-    flex-direction: column;
-    width: 50vw;
+.chart_left {
+    grid-area: graphLeft;
+    width: 100%;
 }
 
+.chart_right {
+    grid-area: graphRight;
+    width: 100%;
+}
+
+
+/* Elements in header */
 .chatbot {
     display: flex;
     width: 100%;
@@ -47,21 +55,23 @@ body {
 
 .message {
     display: flex;
-    margin-top: 20px;
+    margin-top: auto;
+    margin-bottom: auto;
     margin-left: 20px;
     align-items: center;
     padding: 1%;
     padding-left: 2%;
     padding-right: 2%;
-    height: 30%;
     background-color: lightblue;
     border-radius: 10px;
     box-shadow: 1px 1px 1px 1px rgb(0, 34, 45);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
-/* Add arrow to the message box (pointing left) */
-
-.message::before {
+.message::before { /* Add arrow to the message box (pointing left) */
     content: " ";
     height: 0;
     position: absolute;
@@ -73,6 +83,8 @@ body {
     border-color: transparent lightblue transparent transparent;
 }
 
+
+/* Elements in mainLeft */
 .sect-title {
     text-align: center;
     width: 50%;
@@ -90,9 +102,7 @@ body {
     width: 50vw;
 }
 
-/* Style buttons in tab bar */
-
-.tabs button {
+.tabs button { /* Style buttons in tab bar */
     background-color: inherit;
     float: left;
     left: 0;
@@ -130,9 +140,7 @@ body {
     animation: fadeEffect 1s;
 }
 
-/* Go from zero to full opacity */
-
-@keyframes fadeEffect {
+@keyframes fadeEffect { /* Go from zero to full opacity */
     from {
         opacity: 0;
     }
@@ -141,9 +149,7 @@ body {
     }
 }
 
-/* Style category selection */
-
-.category-select {
+.category-select { /* Style category selection */
     display: flex;
     justify-items: center;
     background-color: lightblue;
@@ -171,16 +177,10 @@ body {
 }
 
 #catbutton-win {
-    /* background-color: rgb(103, 213, 103); */
     border-radius: 15px 0px 0px 15px;
 }
 
-#catbutton-act {
-    /* background-color: rgb(177, 176, 176); */
-}
-
 #catbutton-lose {
-    /* background-color: rgb(237, 114, 114); */
     border-radius: 0px 15px 15px 0px;
 }
 
@@ -285,21 +285,16 @@ body {
     float: right;
 }
 
-.overlay1 {
-    fill: none;
-    stroke: none;
-    pointer-events: all;
-}
-
-.focusLine {
-    fill: none;
-    stroke: steelblue;
-    stroke-width: 0.5px;
-}
+/* chartLeft and chartRight */
 
 .chart-container {
     width: 60%;
     margin: 10%;
+}
+
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
 }
 
 #chart {
@@ -309,14 +304,8 @@ body {
     padding-bottom: 50%;
     vertical-align: top;
     overflow: hidden;
-    margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
-}
-
-.svg-content-responsive {
-    display: inline-block;
-    position: absolute;
 }
 
 #chart-2 {
@@ -328,11 +317,28 @@ body {
     overflow: hidden;
     margin-left: auto;
     margin-right: auto;
-    top: 75px;
 }
 
-a {
-    color: #67809f;
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.y.axis path {
+    display: none;
+}
+
+.overlay1 {
+    fill: none;
+    stroke: none;
+    pointer-events: all;
+}
+
+.focusLine {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 0.5px;
 }
 
 .focusCircle {
@@ -346,6 +352,11 @@ a {
     pointer-events: none;
 }
 
+a {
+    color: #67809f;
+}
+
+/* Elements in mainRight */ 
 .portfolio-container {
     display: none;
     flex-direction: column;
