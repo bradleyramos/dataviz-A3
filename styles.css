@@ -99,7 +99,6 @@ body {
     display: flex;
     background-color: lightblue;
     border-radius: 20px 20px 20px 20px;
-    width: 50vw;
 }
 
 .tabs button { /* Style buttons in tab bar */
